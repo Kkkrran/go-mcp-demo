@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	serviceName = "mcp_server"
+	serviceName = "mcp_local"
 	configPath  = flag.String("cfg", "config/config.yaml", "config file path")
 	toolSet     = new(tool_set.ToolSet)
 )

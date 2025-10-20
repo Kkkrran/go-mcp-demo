@@ -35,9 +35,9 @@ services:
     name: host
     load-balance: false
     addr:
-      - 127.0.0.1:10001
-  mcp_server:
-    name: mcp-server
+      - 0.0.0.0:10001
+  mcp_local:
+    name: mcp-mcp_local
     load-balance: false
     addr:
-      - 127.0.0.1:10002
+      - 0.0.0.0:10002
