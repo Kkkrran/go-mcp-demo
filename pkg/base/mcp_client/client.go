@@ -84,19 +84,19 @@ func (m *MCPClient) ConvertToolsToOpenAI() []openai.ChatCompletionToolUnionParam
 // CallTool 调用 MCP 工具
 func (m *MCPClient) CallTool(ctx context.Context, name string, args any) (string, error) {
 	// 设置进度通知处理（这里应该用不上，是streamable HTTP的特性，太高级了）
-	m.Client.OnNotification(func(notification mcp.JSONRPCNotification) {
-		logger.Infof("Received notification: %v", notification)
-		if notification.Method == "notifications/progress" {
-			fmt.Println(notification)
-			params := notification.Params.AdditionalFields
-			progress := params["progress"].(float64)
-			total := params["total"].(float64)
-			message := params["message"].(string)
-
-			// 打印进度信息
-			fmt.Printf("Progress: %.2f%% - %s\n", (progress/total)*100, message)
-		}
-	})
+	//m.Client.OnNotification(func(notification mcp.JSONRPCNotification) {
+	//	logger.Infof("Received notification: %v", notification)
+	//	if notification.Method == "notifications/progress" {
+	//		fmt.Println(notification)
+	//		params := notification.Params.AdditionalFields
+	//		progress := params["progress"].(float64)
+	//		total := params["total"].(float64)
+	//		message := params["message"].(string)
+	//
+	//		// 打印进度信息
+	//		fmt.Printf("Progress: %.2f%% - %s\n", (progress/total)*100, message)
+	//	}
+	//})
 
 	res, err := m.Client.CallTool(ctx, mcp.CallToolRequest{
 		Params: mcp.CallToolParams{

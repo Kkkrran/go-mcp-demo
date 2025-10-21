@@ -3,6 +3,7 @@ package mcp_inject
 import (
 	"context"
 	"fmt"
+	"github.com/FantasyRL/go-mcp-demo/internal/mcp_local/internal/ai_se_solver"
 	"github.com/FantasyRL/go-mcp-demo/internal/mcp_local/internal/dev_runner"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
@@ -60,6 +61,18 @@ func WithDevRunnerTools() tool_set.Option {
 		)
 		toolSet.Tools = append(toolSet.Tools, &toolRun)
 		toolSet.HandlerFunc[toolRun.Name] = dev_runner.HandleCodeRun
+	}
+}
+
+func WithAIScienceAndEngineeringBuildHtmlTool() tool_set.Option {
+	return func(toolSet *tool_set.ToolSet) {
+		newTool := mcp.NewTool(
+			"build_html_to_solve_science_and_engineering_problem",
+			mcp.WithDescription("当用户遇到学习问题上的困难时，通过 <htmath> 特殊标签的使用规范来帮助用户理解数学概念和绘制图像，你可以在图像的后面加上对问题的辅助解析"),
+			mcp.WithString("question", mcp.Required(), mcp.Description("用户提出的科学或工程相关的问题")),
+		)
+		toolSet.Tools = append(toolSet.Tools, &newTool)
+		toolSet.HandlerFunc[newTool.Name] = ai_se_solver.AIScienceAndEngineeringBuildHtml
 	}
 }
 
