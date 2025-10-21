@@ -24,7 +24,7 @@ IMAGE_PREFIX ?= hachimi
 TAG          ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 
 # 服务名
-SERVICES := host mcp_server
+SERVICES := host mcp_local mcp_remote
 service = $(word 1, $@)
 
 # hertz HTTP脚手架
@@ -127,18 +127,18 @@ endif
 help:
 	@echo "Available targets:"; \
 	echo "  host                 - go run cmd/host with config.yaml"; \
-	echo "  mcp_server           - go run cmd/mcp_server with config.yaml"; \
+	echo "  mcp_local           - go run cmd/mcp_local with config.yaml"; \
 	echo "  vendor               - go mod tidy && vendor"; \
-	echo "  docker-build-<svc>   - build image for service (host|mcp_server)"; \
+	echo "  docker-build-<svc>   - build image for service (host|mcp_local)"; \
 	echo "  docker-run-<svc>     - run container (Windows自动映射端口, Linux使用--network host)"; \
 	echo "  pull-run-<svc>       - pull and run container (同上)"; \
-	echo "  stdio                - build mcp_server and run host with stdio config"; \
+	echo "  stdio                - build mcp_local and run host with stdio config"; \
 	echo "  push-<svc>           - push image to remote repo"
 
 
 .PHONY: stdio
 stdio:
-	go build -o bin/mcp_server ./cmd/mcp_server # windows的output需要是.exe，并且在config.stdio.yaml中修改，bin/mcp-server.exe
+	go build -o bin/mcp_local ./cmd/mcp_local # windows的output需要是.exe，并且在config.stdio.yaml中修改，bin/mcp-server.exe
 	go run ./cmd/host -cfg $(CONFIG_PATH)/config.stdio.yaml
 
 .PHONY: push-%

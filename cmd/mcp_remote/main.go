@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/FantasyRL/go-mcp-demo/config"
-	"github.com/FantasyRL/go-mcp-demo/internal/mcp_local/mcp_inject"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/mcp_server"
-	"github.com/FantasyRL/go-mcp-demo/pkg/base/prompt_set"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
@@ -13,23 +11,21 @@ import (
 )
 
 var (
-	serviceName = constant.ServiceNameMCPLocal
+	serviceName = constant.ServiceNameMCPRemote
 	configPath  = flag.String("cfg", "config/config.yaml", "config file path")
 	toolSet     = new(tool_set.ToolSet)
-	promptSet   = new(prompt_set.PromptSet)
 )
 
 func init() {
 	flag.Parse()
 	config.Load(*configPath, serviceName)
 	logger.Init(serviceName, config.GetLoggerLevel())
-	toolSet = tool_set.NewToolSet(mcp_inject.WithTimeTool(), mcp_inject.WithLongRunningOperationTool(), mcp_inject.WithDevRunnerTools())
-	promptSet = prompt_set.NewPromptSet(mcp_inject.WithBuildHTMLPrompt())
+	toolSet = tool_set.NewToolSet()
 }
 
 func main() {
 	logger.Infof("starting mcp server, transport = %s", config.MCP.Transport)
-	coreServer := mcp_server.NewCoreServer(config.MCP.ServerName, config.MCP.Transport, toolSet, promptSet)
+	coreServer := mcp_server.NewCoreServer(config.MCP.ServerName, config.MCP.Transport, toolSet)
 	switch config.MCP.Transport {
 	case constant.MCPTransportStdio:
 		if err := mcp_server.ServeStdio(coreServer); err != nil {

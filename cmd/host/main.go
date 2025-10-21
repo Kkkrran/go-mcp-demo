@@ -6,6 +6,7 @@ import (
 	"github.com/FantasyRL/go-mcp-demo/api/handler/api"
 	"github.com/FantasyRL/go-mcp-demo/api/router"
 	"github.com/FantasyRL/go-mcp-demo/config"
+	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	"github.com/FantasyRL/go-mcp-demo/pkg/utils"
 	"time"
@@ -22,7 +23,7 @@ import (
 )
 
 var (
-	serviceName = "host"
+	serviceName = constant.ServiceNameAPI
 	configPath  = flag.String("cfg", "config/config.yaml", "config file path")
 )
 

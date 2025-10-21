@@ -10,6 +10,7 @@ require (
 	github.com/bytedance/mockey v1.2.14
 	github.com/cloudwego/hertz v0.10.2
 	github.com/cloudwego/kitex v0.15.1
+	github.com/go-resty/resty/v2 v2.16.5
 	github.com/hashicorp/consul/api v1.32.1
 	github.com/hertz-contrib/cors v0.1.0
 	github.com/hertz-contrib/gzip v0.0.3

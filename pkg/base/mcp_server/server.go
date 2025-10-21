@@ -1,6 +1,7 @@
 package mcp_server
 
 import (
+	"github.com/FantasyRL/go-mcp-demo/pkg/base/prompt_set"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"time"
@@ -17,7 +18,7 @@ type HTTPOpts struct {
 }
 
 // NewCoreServer 在此注册 tools/prompts/resources
-func NewCoreServer(name, version string, toolSet *tool_set.ToolSet) *server.MCPServer {
+func NewCoreServer(name, version string, toolSet *tool_set.ToolSet, promptSet *prompt_set.PromptSet) *server.MCPServer {
 	s := server.NewMCPServer(
 		name,
 		version,
@@ -27,6 +28,9 @@ func NewCoreServer(name, version string, toolSet *tool_set.ToolSet) *server.MCPS
 
 	for _, t := range toolSet.Tools {
 		s.AddTool(*t, toolSet.HandlerFunc[t.Name])
+	}
+	for _, p := range promptSet.Prompts {
+		s.AddPrompt(*p, promptSet.HandlerFunc[p.Name])
 	}
 
 	return s
