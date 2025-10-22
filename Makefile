@@ -83,7 +83,7 @@ else
 	docker rm -f $* >/dev/null 2>&1 || true; \
 	case "$*" in \
 		host) PORT_FLAGS="-p 10001:10001" ;; \
-		mcp_server) PORT_FLAGS="-p 10002:10002" ;; \
+		mcp_local) PORT_FLAGS="-p 10002:10002" ;; \
 		*) PORT_FLAGS="" ;; \
 	esac; \
 	docker run --rm -itd \

@@ -25,7 +25,7 @@ mcp:
   server_name: "stdio.mcp.demo"
   transport: "stdio"
   stdio:
-    server_cmd: "./bin/mcp-server" # 如果是windows，需要改成 ./bin/mcp-server.exe
+    server_cmd: "./bin/mcp-local" # 如果是windows，需要改成 ./bin/mcp-local.exe
     server_args: []
 
 
@@ -37,7 +37,7 @@ services:
     addr:
       - 0.0.0.0:10001
   mcp_local:
-    name: mcp-mcp_local
+    name: mcp_local
     load-balance: false
     addr:
       - 0.0.0.0:10002
