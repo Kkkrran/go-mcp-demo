@@ -50,6 +50,14 @@ func AddrGetPort(addr string) int {
 	return port
 }
 
+func AddrGetHost(addr string) string {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return ""
+	}
+	return host
+}
+
 // getOutboundIP 返回当前主机的出网 IP（即系统默认的外部通信地址）
 func getOutboundIP() string {
 	// 创建一个 UDP 连接，目标是任意外部地址（这里使用 8.8.8.8:80）。

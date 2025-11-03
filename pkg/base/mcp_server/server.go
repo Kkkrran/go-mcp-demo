@@ -10,7 +10,6 @@ import (
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	"github.com/FantasyRL/go-mcp-demo/pkg/utils"
 	"github.com/google/uuid"
-	"log"
 	"time"
 
 	"github.com/mark3labs/mcp-go/server"
@@ -63,7 +62,7 @@ func NewStreamableHTTPServer(core *server.MCPServer, serviceName string, addr st
 			Path:    constant.RegistryMCPDefaultPath,
 		})
 		if err != nil {
-			log.Fatal("mcp_server: consul register failed, err: " + err.Error())
+			panic("mcp_server: consul register failed, err: " + err.Error())
 		}
 		logger.Infof("%s : registered to consul successfully on %s", serviceName, addr)
 	default:

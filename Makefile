@@ -55,7 +55,6 @@ docker-build-%: vendor
 	  -t $(IMAGE_PREFIX)/$*:$(TAG) \
 	  .
 
-.PHONY: pull-run-%
 pull-run-%:
 ifeq ($(OS),Windows_NT)
 		@echo ">> Pulling and running docker (STRICT config - Windows): $*"
@@ -70,9 +69,10 @@ else
 			exit 2; \
 		fi; \
 		docker rm -f $* >/dev/null 2>&1 || true; \
+		# 启动容器时加入自定义网络 mcp_net
 		docker run --rm -itd \
 			--name $* \
-			--network host \
+			--network $(DOCKER_NET) \
 			-e SERVICE=$* \
 			-e TZ=Asia/Shanghai \
 			-v "$$CFG_SRC":/app/config/config.yaml:ro \
