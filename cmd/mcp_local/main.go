@@ -27,7 +27,8 @@ func init() {
 	mcp_local.InjectDependencies()
 	toolSet = tool_set.NewToolSet(mcp_inject.WithLongRunningOperationTool(),
 		mcp_inject.WithDevRunnerTools(),
-		mcp_inject.WithAIScienceAndEngineeringBuildHtmlTool())
+		mcp_inject.WithAIScienceAndEngineeringBuildHtmlTool(),
+	)
 	promptSet = prompt_set.NewPromptSet()
 }
 

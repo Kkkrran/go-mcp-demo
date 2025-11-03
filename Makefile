@@ -69,7 +69,7 @@ else
 			exit 2; \
 		fi; \
 		docker rm -f $* >/dev/null 2>&1 || true; \
-		docker run --rm -itd \
+		docker run -itd \
 			--name $* \
 			--network $(DOCKER_NET) \
 			-e SERVICE=$* \
