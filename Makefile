@@ -69,7 +69,6 @@ else
 			exit 2; \
 		fi; \
 		docker rm -f $* >/dev/null 2>&1 || true; \
-		# 启动容器时加入自定义网络 mcp_net
 		docker run --rm -itd \
 			--name $* \
 			--network $(DOCKER_NET) \
