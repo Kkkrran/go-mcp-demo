@@ -55,6 +55,7 @@ docker-build-%: vendor
 	  -t $(IMAGE_PREFIX)/$*:$(TAG) \
 	  .
 
+# only expose port for host service
 .PHONY: pull-run-%
 pull-run-%:
 ifeq ($(OS),Windows_NT)
@@ -70,7 +71,6 @@ else
 			exit 2; \
 		fi; \
 		docker rm -f $* >/dev/null 2>&1 || true; \
-		# only expose port for host service
 		if [ "$*" = "host" ]; then \
 			docker run -itd \
 				--name $* \
