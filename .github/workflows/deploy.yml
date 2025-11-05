@@ -15,6 +15,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: eino-deploy
 
     steps:
       - name: Check out the code
@@ -38,6 +39,7 @@ jobs:
           cd $GITHUB_WORKSPACE && bash make push-${{ github.event.inputs.service }}
   deploy:
     runs-on: ubuntu-latest
+    environment: eino-deploy
     needs: build  # 确保在 build 作业完成后再执行
 
     concurrency:
