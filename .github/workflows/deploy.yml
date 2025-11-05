@@ -35,8 +35,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker Image
-        run: |
-          cd $GITHUB_WORKSPACE && bash make push-${{ github.event.inputs.service }}
+          working-directory: ${{ github.workspace }}
+          run: make push-${{ github.event.inputs.service }}
+
   deploy:
     runs-on: ubuntu-latest
     environment: eino-deploy
@@ -57,4 +58,4 @@ jobs:
           script: |
             cd /root/go-mcp-demo
             git pull -f
-            bash make pull-run-${{ github.event.inputs.service }}
+            make pull-run-${{ github.event.inputs.service }}
