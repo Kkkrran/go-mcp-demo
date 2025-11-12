@@ -17,6 +17,7 @@ CONFIG_PATH = $(DIR)/config
 IDL_PATH = $(DIR)/idl
 OUTPUT_PATH = $(DIR)/output
 API_PATH= $(DIR)/cmd/api
+GEN_CONFIG_PATH ?= $(DIR)/pkg/gorm-gen/generator/etc/config.yaml
 # Docker 网络名称
 DOCKER_NET := docker_mcp_net
 # Docker 镜像前缀和标签
@@ -39,6 +40,16 @@ hertz-gen-api:
 .PHONY: $(SERVICES)
 $(SERVICES):
 	go run $(CMD)/$(service) -cfg $(CONFIG_PATH)/config.yaml
+
+# 版本的不一致可能会导致bug
+#go get -u gorm.io/gorm@v1.30.0
+#go get -u gorm.io/driver/postgres@v1.5.9
+#go get -u gorm.io/gen@v0.3.27
+#go mod tidy
+.PHONY: model
+model:
+	@echo "Generating database models..."
+	go run $(DIR)/pkg/gorm-gen/generator -f $(GEN_CONFIG_PATH)
 
 .PHONY: vendor
 vendor:
