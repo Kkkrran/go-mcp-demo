@@ -45,8 +45,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ChatSSEHandlerResponseBody'
+    /api/v1/template:
+        post:
+            tags:
+                - ApiService
+            description: 示例接口 idl写好后运行make hertz-gen-api生成脚手架
+            operationId: ApiService_Template
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TemplateRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TemplateResponseBody'
 components:
     schemas:
+        BaseResp:
+            title: 基础响应
+            required:
+                - code
+                - msg
+            type: object
+            properties:
+                code:
+                    title: 状态码
+                    type: integer
+                    description: 响应状态码
+                    format: int64
+                msg:
+                    title: 消息
+                    type: string
+                    description: 响应消息
+            description: 所有响应的基础结构
         ChatRequestBody:
             title: 聊天请求
             required:
@@ -80,5 +115,29 @@ components:
                     type: string
                     description: AI生成的回复片段
             description: 包含AI回复片段的流式聊天响应
+        TemplateRequestBody:
+            title: 示例请求
+            required:
+                - templateId
+            type: object
+            properties:
+                templateId:
+                    title: 示范用param
+                    type: string
+                    description: 示范用param
+            description: 示例请求
+        TemplateResponseBody:
+            title: 示例响应
+            required:
+                - data
+            type: object
+            properties:
+                data:
+                    title: 示范用返回值
+                    type: string
+                    description: 示范用返回值
+                base:
+                    $ref: '#/components/schemas/BaseResp'
+            description: 示例响应
 tags:
     - name: ApiService

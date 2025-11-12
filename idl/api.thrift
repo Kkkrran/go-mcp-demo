@@ -57,9 +57,44 @@ struct ChatSSEHandlerResponse{
     }'
 )
 
+struct TemplateRequest{
+    1: string templateId(api.body="templateId", openapi.property='{
+        title: "示范用param",
+        description: "示范用param",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "示例请求",
+        description: "示例请求",
+        required: ["templateId"]
+    }'
+)
+
+struct TemplateResponse{
+    1: string data(api.body="data", openapi.property='{
+        title: "示范用返回值",
+        description: "示范用返回值",
+        type: "string"
+    }')
+    2: model.BaseResp base(api.body="base", openapi.property='{)
+        title: "BaseResp",
+        description: "BaseResp必传",
+        "$ref": "#/components/schemas/BaseResp"
+    }')
+}(
+    openapi.schema='{
+        title: "示例响应",
+        description: "示例响应",
+        required: ["data"]
+    }'
+)
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
     // 流式对话
     ChatSSEHandlerResponse ChatSSE(1: ChatSSEHandlerRequest req)(api.get="/api/v1/chat/sse")
+    // 示例接口 idl写好后运行make hertz-gen-api生成脚手架
+    TemplateResponse Template(1: TemplateRequest req)(api.post="/api/v1/template")
 }
