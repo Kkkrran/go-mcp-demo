@@ -33,3 +33,8 @@ func _chatsseMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _templateMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

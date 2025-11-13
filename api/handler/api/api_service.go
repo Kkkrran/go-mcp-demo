@@ -64,3 +64,24 @@ func ChatSSE(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 }
+
+// Template .
+// @router /api/v1/template [POST]
+func Template(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.TemplateRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(api.TemplateResponse)
+	u, err := application.NewHost(ctx, clientSet).TemplateLogic(&req)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+	resp.User = pack.BuildUserResp(u)
+	pack.RespData(c, resp)
+}

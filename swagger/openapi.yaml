@@ -45,6 +45,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ChatSSEHandlerResponseBody'
+    /api/v1/template:
+        post:
+            tags:
+                - ApiService
+            description: 示例接口 idl写好后运行make hertz-gen-api生成脚手架
+            operationId: ApiService_Template
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TemplateRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TemplateResponseBody'
 components:
     schemas:
         ChatRequestBody:
@@ -80,5 +98,41 @@ components:
                     type: string
                     description: AI生成的回复片段
             description: 包含AI回复片段的流式聊天响应
+        TemplateRequestBody:
+            title: 示例请求
+            required:
+                - templateId
+            type: object
+            properties:
+                templateId:
+                    title: 示范用param
+                    type: string
+                    description: 示范用param
+            description: 示例请求
+        TemplateResponseBody:
+            title: 示例响应
+            required:
+                - user
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/User'
+            description: 示例响应
+        User:
+            title: 用户信息
+            required:
+                - id
+                - name
+            type: object
+            properties:
+                id:
+                    title: 用户ID
+                    type: string
+                    description: 唯一标识用户的ID
+                name:
+                    title: 用户名
+                    type: string
+                    description: 用户的显示名称
+            description: 包含用户基本信息的结构
 tags:
     - name: ApiService
