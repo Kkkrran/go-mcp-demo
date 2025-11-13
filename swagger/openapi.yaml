@@ -129,15 +129,29 @@ components:
         TemplateResponseBody:
             title: 示例响应
             required:
-                - data
+                - user
             type: object
             properties:
-                data:
-                    title: 示范用返回值
-                    type: string
-                    description: 示范用返回值
+                user:
+                    $ref: '#/components/schemas/User'
                 base:
                     $ref: '#/components/schemas/BaseResp'
             description: 示例响应
+        User:
+            title: 用户信息
+            required:
+                - id
+                - name
+            type: object
+            properties:
+                id:
+                    title: 用户ID
+                    type: string
+                    description: 唯一标识用户的ID
+                name:
+                    title: 用户名
+                    type: string
+                    description: 用户的显示名称
+            description: 包含用户基本信息的结构
 tags:
     - name: ApiService

@@ -72,7 +72,7 @@ struct TemplateRequest{
 )
 
 struct TemplateResponse{
-    1: string data(api.body="data", openapi.property='{
+    1: model.User user(api.body="user", openapi.property='{
         title: "示范用返回值",
         description: "示范用返回值",
         type: "string"
@@ -86,7 +86,7 @@ struct TemplateResponse{
     openapi.schema='{
         title: "示例响应",
         description: "示例响应",
-        required: ["data"]
+        required: ["user"]
     }'
 )
 

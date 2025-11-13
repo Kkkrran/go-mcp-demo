@@ -710,7 +710,7 @@ func (p *TemplateRequest) String() string {
 }
 
 type TemplateResponse struct {
-	Data string          `thrift:"data,1" form:"data" json:"data"`
+	User *model.User     `thrift:"user,1" form:"user" json:"user"`
 	Base *model.BaseResp `thrift:"base,2" form:"base" json:"base"`
 }
 
@@ -721,8 +721,13 @@ func NewTemplateResponse() *TemplateResponse {
 func (p *TemplateResponse) InitDefault() {
 }
 
-func (p *TemplateResponse) GetData() (v string) {
-	return p.Data
+var TemplateResponse_User_DEFAULT *model.User
+
+func (p *TemplateResponse) GetUser() (v *model.User) {
+	if !p.IsSetUser() {
+		return TemplateResponse_User_DEFAULT
+	}
+	return p.User
 }
 
 var TemplateResponse_Base_DEFAULT *model.BaseResp
@@ -735,8 +740,12 @@ func (p *TemplateResponse) GetBase() (v *model.BaseResp) {
 }
 
 var fieldIDToName_TemplateResponse = map[int16]string{
-	1: "data",
+	1: "user",
 	2: "base",
+}
+
+func (p *TemplateResponse) IsSetUser() bool {
+	return p.User != nil
 }
 
 func (p *TemplateResponse) IsSetBase() bool {
@@ -763,7 +772,7 @@ func (p *TemplateResponse) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -808,14 +817,11 @@ ReadStructEndError:
 }
 
 func (p *TemplateResponse) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
+	_field := model.NewUser()
+	if err := _field.Read(iprot); err != nil {
 		return err
-	} else {
-		_field = v
 	}
-	p.Data = _field
+	p.User = _field
 	return nil
 }
 func (p *TemplateResponse) ReadField2(iprot thrift.TProtocol) error {
@@ -860,10 +866,10 @@ WriteStructEndError:
 }
 
 func (p *TemplateResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("data", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("user", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Data); err != nil {
+	if err := p.User.Write(oprot); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
