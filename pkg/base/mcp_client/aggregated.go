@@ -74,7 +74,7 @@ func (a *AggregatedClient) refresh() {
 	// 服务发现
 	serviceToUrls, err := a.resolver.Resolve(a.discoverServices)
 	if err != nil {
-		logger.Error("registry resolve:", zap.Error(err))
+		logger.Warn("registry resolve:", zap.Error(err))
 		return
 	}
 	// 转化为set
@@ -98,7 +98,7 @@ func (a *AggregatedClient) refresh() {
 		}
 		cli.Close()
 		delete(a.clients, u)
-		logger.Infof("mcp disconnected: %s", u)
+		logger.Info("mcp disconnected: ", zap.String("url", u))
 	}
 	// 新增连接
 	for u := range target {
@@ -119,6 +119,7 @@ func (a *AggregatedClient) refresh() {
 		logger.Errorf("mcp dial %s: %v", constant.FzuHelperServerMCPUrl, err)
 	}
 	a.clients["fzuhelper-mcp"] = fzuCli
+	logger.Infof("fzu-mcp connected: %s (tools=%d)", constant.FzuHelperServerMCPUrl, len(fzuCli.Tools))
 
 	a.rebuildIndex()
 }
@@ -129,6 +130,10 @@ func (a *AggregatedClient) rebuildIndex() {
 	candidates := map[string][]string{}
 	toolDef := map[string]mcp.Tool{}
 	for url, cli := range a.clients {
+		if cli == nil {
+			logger.Warn("mcp unexpect disconnection: ", zap.String("url", url))
+			continue
+		}
 		for _, t := range cli.Tools {
 			candidates[t.Name] = append(candidates[t.Name], url)
 			// 记录一个定义（相同名称一般结构一致）
