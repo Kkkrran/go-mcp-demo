@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/errno"
-	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	openai "github.com/openai/openai-go/v2"
 )
 
@@ -92,22 +92,11 @@ func (h *Host) StreamChatOpenAI(
 		var acc openai.ChatCompletionAccumulator
 		var needTools bool
 
-		params := openai.ChatCompletionNewParams{
+		err := h.aiProviderCli.ChatStreamOpenAI(ctx, openai.ChatCompletionNewParams{
 			Model:    openai.ChatModel(config.AiProvider.Model),
 			Messages: hist,
 			Tools:    tools,
-		}
-		if config.AiProvider.Options.MaxTokens != nil {
-			params.MaxTokens = openai.Int(int64(*config.AiProvider.Options.MaxTokens))
-		}
-		if config.AiProvider.Options.Temperature != nil {
-			params.Temperature = openai.Float(*config.AiProvider.Options.Temperature)
-		}
-		if config.AiProvider.Options.TopP != nil {
-			params.TopP = openai.Float(*config.AiProvider.Options.TopP)
-		}
-
-		err := h.aiProviderCli.ChatStreamOpenAI(ctx, params, func(chunk *openai.ChatCompletionChunk) error {
+		}, func(chunk *openai.ChatCompletionChunk) error {
 			acc.AddChunk(*chunk)
 			if len(chunk.Choices) > 0 {
 				if s := chunk.Choices[0].Delta.Content; s != "" {

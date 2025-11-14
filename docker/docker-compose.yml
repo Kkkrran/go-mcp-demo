@@ -1,4 +1,4 @@
-# docker-compose.yml
+version: "3.9"
 
 services:
   consul:
@@ -14,27 +14,26 @@ services:
       -bind=0.0.0.0
       -data-dir=/consul/data
     ports:
-      - "8500:8500"   # Consul Web UI 和 HTTP API
-      - "8600:8600/udp" # Consul DNS 接口
+      - "8500:8500"  # Web UI / HTTP API
+      - "8600:8600/udp" # DNS
       - "8600:8600/tcp"
     volumes:
       - ./data/consul/data:/consul/data
     networks:
-      - mcp_net
-
+      - mcp_net  # 加入自定义网络
   postgres:
-    image: bitnami/postgresql:16
+    image: m.daocloud.io/docker.io/bitnami/postgresql:latest
     container_name: mcp-postgres
     ports:
-      - "5432:5432"
+        - "5432:5432"
     env_file:
       - ./env/postgres.env
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data/
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - mcp_net
+        - mcp_net
 
 networks:
   mcp_net:
-    driver: bridge
+    driver: bridge  # 使用桥接网络

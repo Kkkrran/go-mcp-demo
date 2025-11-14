@@ -1,148 +1,166 @@
-# 辅助工具安装（请手动执行一次）：
+# 辅助工具安装列表
 # go install github.com/cloudwego/hertz/cmd/hz@latest
 # go install github.com/cloudwego/kitex/tool/cmd/kitex@latest
 # go install github.com/hertz-contrib/swagger-generate/thrift-gen-http-swagger@latest
 
+# 默认输出帮助信息
 .DEFAULT_GOAL := help
 
+# 纯 Windows 环境：不强制依赖 WSL/Git Bash，默认使用 cmd，必要逻辑用 PowerShell 执行
+# 项目 MODULE 名
 MODULE = github.com/FantasyRL/go-mcp-demo
 REMOTE_REPOSITORY ?= fantasyrl/go-mcp-demo
-DIR = $(abspath .)
+# 目录相关（避免在 Windows 下调用 pwd 失败，使用内置 CURDIR）
+DIR = $(CURDIR)
 CMD = $(DIR)/cmd
 CONFIG_PATH = $(DIR)/config
 IDL_PATH = $(DIR)/idl
+OUTPUT_PATH = $(DIR)/output
+API_PATH= $(DIR)/cmd/api
 GEN_CONFIG_PATH ?= $(DIR)/pkg/gorm-gen/generator/etc/config.yaml
-
+# Docker 网络名称
 DOCKER_NET := docker_mcp_net
+# Docker 镜像前缀和标签
 IMAGE_PREFIX ?= hachimi
-TAG          ?= $(shell git rev-parse --short HEAD 2>nul || echo dev)
+TAG          ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 
+# 服务名
 SERVICES := host mcp_local mcp_remote
 service = $(word 1, $@)
 
-# --- 代码生成 ---
+# hertz HTTP脚手架
+# init: hz new -idl ./idl/api.thrift -mod github.com/FantasyRL/go-mcp-demo -handler_dir ./api/handler -model_dir ./api/model -router_dir ./api/router
 .PHONY: hertz-gen-api
 hertz-gen-api:
-	hz update -idl "$(IDL_PATH)/api.thrift"
-	powershell -NoProfile -Command " \
-		if (Test-Path '$(DIR)/swagger') { Remove-Item -Recurse -Force '$(DIR)/swagger' }; \
-		if (Test-Path '$(DIR)/gen-go') { Remove-Item -Recurse -Force '$(DIR)/gen-go' } \
-	"
-	thriftgo -g go -p http-swagger "$(IDL_PATH)/api.thrift"
+	hz update -idl ${IDL_PATH}/api.thrift; \
+	rm -rf $(DIR)/swagger; \
+    thriftgo -g go -p http-swagger $(IDL_PATH)/api.thrift; \
+    rm -rf $(DIR)/gen-go
 
-# --- 运行本地服务 ---
 .PHONY: $(SERVICES)
 $(SERVICES):
-	go run "$(CMD)/$(service)" -cfg "$(CONFIG_PATH)/config.yaml"
+	go run $(CMD)/$(service) -cfg $(CONFIG_PATH)/config.yaml
 
-# --- 数据库模型生成 ---
+# 版本的不一致可能会导致bug
+#go get -u gorm.io/gorm@v1.30.0
+#go get -u gorm.io/driver/postgres@v1.5.9
+#go get -u gorm.io/gen@v0.3.27
+#go mod tidy
 .PHONY: model
 model:
-	@echo Generating database models...
-	go run "$(DIR)/pkg/gorm-gen/generator" -f "$(GEN_CONFIG_PATH)"
+	@echo "Generating database models..."
+	go run $(DIR)/pkg/gorm-gen/generator -f $(GEN_CONFIG_PATH)
 
-# --- Vendor 依赖 ---
 .PHONY: vendor
 vendor:
 	@echo ">> go mod tidy && go mod vendor"
 	go mod tidy
 	go mod vendor
 
-# --- 构建 Docker 镜像 ---
 .PHONY: docker-build-%
 docker-build-%: vendor
 	@echo ">> Building image for service: $* (tag: $(TAG))"
-	docker build ^
-	  --build-arg SERVICE=$* ^
-	  -f docker/Dockerfile ^
-	  -t $(IMAGE_PREFIX)/$*:$(TAG) ^
+	docker build \
+	  --build-arg SERVICE=$* \
+	  -f docker/Dockerfile \
+	  -t $(IMAGE_PREFIX)/$*:$(TAG) \
 	  .
 
-# --- 拉取并运行容器（使用 PowerShell 脚本）---
+# only expose port for host service
 .PHONY: pull-run-%
 pull-run-%:
-	@echo ">> Pulling and running docker (Windows): $*"
-	docker pull $(REMOTE_REPOSITORY):$*
-	powershell -NoProfile -ExecutionPolicy Bypass -File "$(DIR)\scripts\docker-run.ps1" -Service "$*" -Image "$(REMOTE_REPOSITORY):$*" -ConfigPath "$(CONFIG_PATH)\config.yaml"
+ifeq ($(OS),Windows_NT)
+		@echo ">> Pulling and running docker (STRICT config - Windows): $*"
+		@docker pull $(REMOTE_REPOSITORY):$*
+		@powershell -NoProfile -ExecutionPolicy Bypass -File "$(DIR)\scripts\docker-run.ps1" -Service "$*" -Image "$(REMOTE_REPOSITORY):$*" -ConfigPath "$(CONFIG_PATH)\config.yaml"
+else
+		@echo ">> Pulling and running docker (STRICT config - Linux): $*"
+		@docker pull $(REMOTE_REPOSITORY):$*
+		@CFG_SRC="$(CONFIG_PATH)/config.yaml"; \
+		if [ ! -f "$$CFG_SRC" ]; then \
+			echo "ERROR: $$CFG_SRC not found. Please create it." >&2; \
+			exit 2; \
+		fi; \
+		docker rm -f $* >/dev/null 2>&1 || true; \
+		if [ "$*" = "host" ]; then \
+			docker run -itd \
+				--name $* \
+				--network ${DOCKER_NET} \
+				-e SERVICE=$* \
+				-e TZ=Asia/Shanghai \
+				-v "$$CFG_SRC":/app/config/config.yaml:ro \
+				-p 10001:10001 \
+				$(REMOTE_REPOSITORY):$*; \
+		else \
+			docker run -itd \
+				--name $* \
+				--network ${DOCKER_NET} \
+				-e SERVICE=$* \
+				-e TZ=Asia/Shanghai \
+				-v "$$CFG_SRC":/app/config/config.yaml:ro \
+				$(REMOTE_REPOSITORY):$*; \
+		fi
+endif
 
-# --- 帮助信息 ---
+
+# 帮助信息
 .PHONY: help
 help:
-	@echo Available targets:
-	@echo   host                 - Run cmd/host with config.yaml
-	@echo   mcp_local           - Run cmd/mcp_local with config.yaml
-	@echo   mcp_remote          - Run cmd/mcp_remote with config.yaml
-	@echo   vendor              - Run 'go mod tidy && go mod vendor'
-	@echo   model               - Generate GORM models
-	@echo   hertz-gen-api       - Regenerate Hertz API from IDL
-	@echo   docker-build-^<svc^> - Build Docker image for service
-	@echo   pull-run-^<svc^>    - Pull and run container via PowerShell script
-	@echo   stdio               - Build mcp_local.exe and run host with stdio config
-	@echo   env                 - Start Consul + dependencies via docker-compose
-	@echo   push-^<svc^>        - Push image to remote repo (with confirmation)
+	@echo "Available targets:"; \
+	echo "  host                 - go run cmd/host with config.yaml"; \
+	echo "  mcp_local           - go run cmd/mcp_local with config.yaml"; \
+	echo "  vendor               - go mod tidy && vendor"; \
+	echo "  docker-build-<svc>   - build image for service (host|mcp_local)"; \
+	echo "  docker-run-<svc>     - run container (Windows自动映射端口, Linux使用--network host)"; \
+	echo "  pull-run-<svc>       - pull and run container (同上)"; \
+	echo "  stdio                - build mcp_local and run host with stdio config"; \
+	echo "  push-<svc>           - push image to remote repo"
 
-# --- Stdio 模式（用于 MCP 测试）---
+
 .PHONY: stdio
 stdio:
-	@echo ">> Building mcp_local.exe for stdio mode..."
-	go build -o bin/mcp_local.exe ./cmd/mcp_local
-	@echo ">> Running host with stdio config..."
-	go run ./cmd/host -cfg "$(CONFIG_PATH)/config.stdio.yaml"
+	go build -o bin/mcp_local ./cmd/mcp_local # windows的output需要是.exe，并且在config.stdio.yaml中修改，bin/mcp-server.exe
+	go run ./cmd/host -cfg $(CONFIG_PATH)/config.stdio.yaml
 
-# --- 推送镜像（带确认）---
 .PHONY: push-%
 push-%:
-	powershell -NoProfile -Command " \
-		$$svc = '$*'; \
-		$$validServices = @('host', 'mcp_local', 'mcp_remote'); \
-		if ($$validServices -notcontains $$svc) { \
-			Write-Host 'ERROR: Service $$svc is not valid. Available: [$$($$validServices -join ', ')]' -ForegroundColor Red; \
-			exit 1 \
-		}; \
-		$$confirm = Read-Host 'Confirm service name to push (type ''$$svc'' to confirm)'; \
-		if ($$confirm -ne $$svc) { \
-			Write-Host 'Confirmation failed. Expected ''$$svc'', got ''$$confirm''' -ForegroundColor Red; \
-			exit 1 \
-		}; \
-		$$arch = (Get-CimInstance Win32_Processor).Architecture; \
-		Write-Host 'Building and pushing image for service: $$svc'; \
-		if ($$arch -eq 9 -or $$arch -eq 6) { \
-			docker build --build-arg SERVICE=$$svc -t $(REMOTE_REPOSITORY):$$svc -f docker/Dockerfile .; \
-			docker push $(REMOTE_REPOSITORY):$$svc; \
-		} else { \
-			Write-Host 'Using buildx for cross-platform build...'; \
-			docker buildx build --platform linux/amd64 --build-arg SERVICE=$$svc -t $(REMOTE_REPOSITORY):$$svc -f docker/Dockerfile --push .; \
-		} \
-	"
+	@read -p "Confirm service name to push (type '$*' to confirm): " CONFIRM_SERVICE; \
+	if [ "$$CONFIRM_SERVICE" != "$*" ]; then \
+		echo "Confirmation failed. Expected '$*', but got '$$CONFIRM_SERVICE'."; \
+		exit 1; \
+	fi; \
+	if echo "$(SERVICES)" | grep -wq "$*"; then \
+		if [ "$(ARCH)" = "x86_64" ] || [ "$(ARCH)" = "amd64" ]; then \
+			echo "Building and pushing $* for amd64 architecture..."; \
+			docker build --build-arg SERVICE=$* -t $(REMOTE_REPOSITORY):$* -f docker/Dockerfile .; \
+			docker push $(REMOTE_REPOSITORY):$*; \
+		else \
+			echo "Building and pushing $* using buildx for amd64 architecture..."; \
+			docker buildx build --platform linux/amd64 --build-arg SERVICE=$* -t $(REMOTE_REPOSITORY):$* -f docker/Dockerfile --push .; \
+		fi; \
+	else \
+		echo "Service '$*' is not a valid service. Available: [$(SERVICES)]"; \
+		exit 1; \
+	fi
 
-# --- 启动开发环境（Consul 等）---
 .PHONY: env
 env:
-	powershell -NoProfile -Command " \
-		$$consulPath = '$(DIR)/docker/data/consul'; \
-		if (Test-Path $$consulPath) { \
-			Write-Host 'Removing old Consul data...'; \
-			Remove-Item -Recurse -Force $$consulPath; \
-		}; \
-		Set-Location '$(DIR)/docker'; \
-		docker-compose up -d \
-	"
+	rm -rf $(DIR)/docker/data/consul ; \
+	cd $(DIR)/docker && docker-compose up -d
 
-# --- CI/CD 专用推送（无交互）---
+# only for cd to use
 .PHONY: push-cd-%
 push-cd-%: vendor
-	powershell -NoProfile -Command " \
-		$$svc = '$*'; \
-		$$validServices = @('host', 'mcp_local', 'mcp_remote'); \
-		if ($$validServices -notcontains $$svc) { \
-			Write-Host 'ERROR: Invalid service $$svc' -ForegroundColor Red; \
-			exit 1 \
-		}; \
-		$$arch = (Get-CimInstance Win32_Processor).Architecture; \
-		if ($$arch -eq 9 -or $$arch -eq 6) { \
-			docker build --build-arg SERVICE=$$svc -t $(REMOTE_REPOSITORY):$$svc -f docker/Dockerfile .; \
-			docker push $(REMOTE_REPOSITORY):$$svc; \
-		} else { \
-			docker buildx build --platform linux/amd64 --build-arg SERVICE=$$svc -t $(REMOTE_REPOSITORY):$$svc -f docker/Dockerfile --push .; \
-		} \
-	"
+	@if echo "$(SERVICES)" | grep -wq "$*"; then \
+		if [ "$(ARCH)" = "x86_64" ] || [ "$(ARCH)" = "amd64" ]; then \
+			echo "Building and pushing $* for amd64 architecture..."; \
+			docker build --build-arg SERVICE=$* -t $(REMOTE_REPOSITORY):$* -f docker/Dockerfile .; \
+			docker push $(REMOTE_REPOSITORY):$*; \
+		else \
+			echo "Building and pushing $* using buildx for amd64 architecture..."; \
+			docker buildx build --platform linux/amd64 --build-arg SERVICE=$* -t $(REMOTE_REPOSITORY):$* -f docker/Dockerfile --push .; \
+		fi; \
+	else \
+		echo "Service '$*' is not a valid service. Available: [$(SERVICES)]"; \
+		exit 1; \
+	fi

@@ -30,14 +30,12 @@ func WithMCPClient(services []string) Option {
 			if config.MCP.HTTP.BaseURL == "" {
 				log.Fatalf("missing MCP HTTP BaseURL while registry provider is 'none'")
 			}
-			log.Printf("Creating MCP client with URL: %s", config.MCP.HTTP.BaseURL)
 			mcpCli, err := mcp_client.NewMCPClient(config.MCP.HTTP.BaseURL)
 			if err != nil {
 				log.Fatalf("failed to create http mcp client: %s", err)
 			}
-			log.Printf("MCP client created successfully")
 			clientSet.MCPCli = mcpCli
-			
+
 		// 服务发现（Consul）：使用聚合客户端，多路连接 + 定时刷新
 		case config.Registry.Provider == constant.RegistryProviderConsul:
 			resolver := consul.NewResolver()
