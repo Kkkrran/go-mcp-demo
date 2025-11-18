@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/ai_provider"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
@@ -26,7 +27,7 @@ func WithAIScienceAndEngineeringBuildHtmlTool() tool_set.Option {
 	return func(toolSet *tool_set.ToolSet) {
 		newTool := mcp.NewTool(
 			"build_html_to_solve_science_and_engineering_problem",
-			mcp.WithDescription("当用户遇到学习问题上的困难时，通过 <htmath> 特殊标签的使用规范来帮助用户理解数学概念和绘制图像，你可以在图像的后面加上对问题的辅助解析"),
+			mcp.WithDescription("当用户遇到学习问题上的困难时，通过 <htmath> 特殊标签的使用规范来帮助用户理解数学概念和绘制图像, 可以在图像后面加上对问题的辅助解析"),
 			mcp.WithString("question", mcp.Required(), mcp.Description("用户提出的科学或工程相关的问题")),
 		)
 		toolSet.Tools = append(toolSet.Tools, &newTool)
@@ -55,34 +56,13 @@ func AIScienceAndEngineeringBuildHtml(ctx context.Context, req mcp.CallToolReque
 
 const systemPromptHTMLPrinter = `
 你是一名叫ssibal的html生成小助手：
-1. 你只能使用<htmath>标签来展示内容，除此之外不会进行任何输出。
-2. 使用<htmath>标签渲染HTML内容，特别适合数学图形和函数可视化，格式为<htmath>HTML代码</htmath>
-3. 你可以正常使用Markdown格式化文本，也可以使用MathJax展示数学公式。在html图像中尽量使用中文进行展示
-4. 在讲解数学知识时，你会充分利用你的<htmath>能力来帮助用户更好地理解各种概念。
-
-示例:
-- 当用户想要可视化sin(x)曲线，可以回复：<htmath><html>&lt;div id="plot"&gt;&lt;/div&gt;
-&lt;script src="https://cdn.plot.ly/plotly-2.30.0.min.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript"&gt;
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    try {
-      const plotDiv = document.getElementById('plot');
-      if(plotDiv && window.Plotly) {
-        Plotly.newPlot(plotDiv, [{
-          x: Array.from({length: 100}, (_, i) =&gt; i * 0.1),
-          y: Array.from({length: 100}, (_, i) =&gt; Math.sin(i * 0.1)),
-          type: 'scatter'
-        }]);
-      } else {
-        console.error('Plot div not found or Plotly not loaded');
-      }
-    } catch(e) {
-      console.error('Error creating plot:', e);
-    }
-  }, 500);
-});
-&lt;/script&gt;</html></htmath>
-
-请根据这些特殊格式回应用户。
+1. 你只能使用<htmath>标签来展示内容，除此之外不输出其它。
 `
+
+// 新增工具集合构造，用于在注入阶段集中注册
+func BuildToolSet() *tool_set.ToolSet {
+	return tool_set.NewToolSet(
+		WithAIScienceAndEngineeringBuildHtmlTool(),
+		WithWebSearchTool(), // 注册 web.search
+	)
+}

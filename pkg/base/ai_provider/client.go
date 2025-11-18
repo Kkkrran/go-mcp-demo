@@ -7,17 +7,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/errno"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/option"
-	"io"
-	"net"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type Client struct {
@@ -27,28 +28,51 @@ type Client struct {
 	openaiClient *openai.Client
 }
 
+// 扩展可选覆盖参数（保持向后兼容：不传则回落到 config）
 type ClientOptions struct {
 	BaseURL       string
 	RequestTimout time.Duration
+	Mode          string // "local" | "remote"
+	APIKey        string // remote 模式用
+	Model         string // 兼容层中有时需要记录（此处不强制）
 }
 
-// NewAiProviderClient 创建一个 AiProvider 客户端
-func NewAiProviderClient() *Client {
+// NewAiProviderClient 支持可选覆盖参数，不传仍使用 config
+func NewAiProviderClient(opts ...ClientOptions) *Client {
+	var ov ClientOptions
+	if len(opts) > 0 {
+		ov = opts[0]
+	}
+
 	to := config.AiProvider.Options.RequestTimout
+	if ov.RequestTimout > 0 {
+		to = ov.RequestTimout
+	}
 	if to <= 0 {
 		to = 60 * time.Second
 	}
-	switch config.AiProvider.Mode {
+
+	mode := config.AiProvider.Mode
+	if ov.Mode != "" {
+		mode = ov.Mode
+	}
+
+	switch mode {
 	case constant.AiProviderModeLocal:
-		// 本地 AiProvider
-		base := strings.TrimRight(config.AiProvider.BaseURL, "/") + "/v1" // AiProvider 的 OpenAI 兼容层
+		base := config.AiProvider.BaseURL
+		if ov.BaseURL != "" {
+			base = ov.BaseURL
+		}
+		// OpenAI 兼容前缀
+		baseCompat := strings.TrimRight(base, "/") + "/v1"
+
 		openaiCli := openai.NewClient(
 			option.WithAPIKey("ollama"),
-			option.WithBaseURL(base),
+			option.WithBaseURL(baseCompat),
 		)
 		return &Client{
 			mode:    constant.AiProviderModeLocal,
-			baseURL: config.AiProvider.BaseURL,
+			baseURL: base, // Chat 接口直接用 base
 			httpClient: &http.Client{
 				Timeout: to,
 				Transport: &http.Transport{
@@ -67,20 +91,27 @@ func NewAiProviderClient() *Client {
 			openaiClient: &openaiCli,
 		}
 	case constant.AiProviderModeRemote:
-		// 远程 openAI-API
+		base := config.AiProvider.Remote.BaseURL
+		key := config.AiProvider.Remote.APIKey
+		if ov.BaseURL != "" {
+			base = ov.BaseURL
+		}
+		if ov.APIKey != "" {
+			key = ov.APIKey
+		}
 		openaiCli := openai.NewClient(
-			option.WithAPIKey(config.AiProvider.Remote.APIKey),
-			option.WithBaseURL(config.AiProvider.Remote.BaseURL))
+			option.WithAPIKey(key),
+			option.WithBaseURL(base),
+		)
 		return &Client{
 			mode:         constant.AiProviderModeRemote,
-			baseURL:      config.AiProvider.Remote.BaseURL,
+			baseURL:      base,
 			openaiClient: &openaiCli,
 		}
 	default:
-		logger.Errorf("unsupported mode: %s", config.AiProvider.Mode)
+		logger.Errorf("unsupported mode: %s", mode)
 		return nil
 	}
-
 }
 
 // Chat 调用 /api/chat，非流式
@@ -142,7 +173,6 @@ func (c *Client) ChatStream(ctx context.Context, req ChatRequest, onChunk func(*
 	}
 
 	sc := bufio.NewScanner(resp.Body)
-	// 适当放宽单行大小，以免长 JSON 被截断
 	buf := make([]byte, 0, 64*1024)
 	sc.Buffer(buf, 10*1024*1024)
 
