@@ -1,3 +1,7 @@
+# 辅助工具安装列表
+# go install github.com/cloudwego/hertz/cmd/hz@latest
+# go install github.com/cloudwego/kitex/tool/cmd/kitex@latest
+# go install github.com/hertz-contrib/swagger-generate/thrift-gen-http-swagger@latest
 
 .DEFAULT_GOAL := help
 

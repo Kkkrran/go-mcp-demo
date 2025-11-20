@@ -25,7 +25,7 @@ mcp:
   server_name: "stdio.mcp.demo"
   transport: "stdio"
   stdio:
-    server_cmd: "./bin/mcp_local" # Windows 下自动寻找 .exe；名称需与 Makefile 输出一致
+    server_cmd: "./bin/mcp-local" # 如果是windows，需要改成 ./bin/mcp-local.exe
     server_args: []
 
 

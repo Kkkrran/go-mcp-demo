@@ -3,13 +3,12 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	"gorm.io/driver/postgres"
+	"log"
+	"time"
 
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"

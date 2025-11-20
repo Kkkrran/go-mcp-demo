@@ -1,7 +1,6 @@
 namespace go api
 include "model.thrift"
 include "openapi.thrift"
-
 struct ChatRequest{
     1: string message(api.body="message", openapi.property='{
         title: "用户消息",
