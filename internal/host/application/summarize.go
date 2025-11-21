@@ -1,6 +1,8 @@
 package application
 
 import (
+    "regexp"
+    "bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -26,22 +28,105 @@ var mockConversationHistory = []string{
     "[User] 今天的任务是为 go-mcp 项目增加对话总结能力，已经完成 IDL 更新。",
     "[Assistant] 已记录，后续需要补上提示词和数据库落盘。",
     "[Tool] file.write -> internal/host/infra/prompts/summarize.txt",
-    "[User] 记得把 tags、tool_calls、file_paths 都写入 summaries 表。",
+    "[User] 记得把 tags、tool_calls、notes 都写入 summaries 表。",
 }
 
 type SummarizeResult struct {
     Summary       string
     Tags          []string
     ToolCallsJSON string
-    FilePaths     []string
+    // NotesJSON 直接透传原始 JSON bytes（用于写入 jsonb 和对外返回）
+    NotesJSON     json.RawMessage
+    // 便于 handler 层直接使用的结构化 notes
+    Notes         map[string]string
 }
 
 type conversationSummaryPayload struct {
     Summary   string          `json:"summary"`
     Tags      []string        `json:"tags"`
     ToolCalls json.RawMessage `json:"tool_calls"`
-    FilePaths []string        `json:"file_paths"`
+    // 接收原始 notes 数据用于直接透传
+    NotesRaw  json.RawMessage `json:"notes"`
 }
+
+var atNotationRe = regexp.MustCompile(`^@?\{\s*(.*)\s*\}$`)
+
+func parseAtNotation(input string) (map[string]string, bool) {
+    match := atNotationRe.FindStringSubmatch(strings.TrimSpace(input))
+    if len(match) < 2 {
+        return nil, false
+    }
+    body := match[1]
+    res := make(map[string]string)
+    for _, part := range strings.Split(body, ";") {
+        part = strings.TrimSpace(part)
+        if part == "" {
+            continue
+        }
+        kv := strings.SplitN(part, "=", 2)
+        key := strings.TrimSpace(kv[0])
+        val := ""
+        if len(kv) > 1 {
+            val = strings.TrimSpace(kv[1])
+        }
+        if key != "" {
+            res[key] = val
+        }
+    }
+    return res, true
+}
+
+func jsonToStringMap(b json.RawMessage) map[string]string {
+    res := map[string]string{}
+    if len(b) == 0 || string(bytes.TrimSpace(b)) == "null" {
+        return res
+    }
+    // 优先 map[string]string
+    var ms map[string]string
+    if err := json.Unmarshal(b, &ms); err == nil {
+        return ms
+    }
+    // map[string]any
+    var ma map[string]any
+    if err := json.Unmarshal(b, &ma); err == nil {
+        for k, v := range ma {
+            bb, _ := json.Marshal(v)
+            res[k] = strings.Trim(string(bb), "\"")
+        }
+        return res
+    }
+    // 解析字符串（含 @{...} 兼容）
+    var s string
+    if err := json.Unmarshal(b, &s); err == nil {
+        if parsed, ok := parseAtNotation(s); ok {
+            return parsed
+        }
+        res["value"] = s
+        return res
+    }
+    // 兜底保存原始文本
+    res["raw"] = string(b)
+    return res
+}
+
+// 简化 Unmarshal：只接收原始 bytes，后续校验在 parseConversationSummary 做
+func (p *conversationSummaryPayload) UnmarshalJSON(data []byte) error {
+    var aux struct {
+        Summary   string          `json:"summary"`
+        Tags      []string        `json:"tags"`
+        ToolCalls json.RawMessage `json:"tool_calls"`
+        Notes     json.RawMessage `json:"notes"`
+    }
+    if err := json.Unmarshal(data, &aux); err != nil {
+        return err
+    }
+    p.Summary = aux.Summary
+    p.Tags = aux.Tags
+    p.ToolCalls = aux.ToolCalls
+    p.NotesRaw = aux.Notes
+    return nil
+}
+
 
 func (h *Host) buildSummarizePrompt(conversationID string) (string, error) {
     tpl, err := infra.LoadPrompt(summarizePromptName)
@@ -66,7 +151,7 @@ func (h *Host) invokeSummarizeModel(ctx context.Context, prompt string) (string,
         Model: openai.ChatModel(config.AiProvider.Model),
         Messages: []openai.ChatCompletionMessageParamUnion{
             openai.SystemMessage(prompt),
-            openai.UserMessage("请严格输出 JSON，字段：summary、tags、tool_calls、file_paths。"),
+            openai.UserMessage("请严格输出 JSON，字段：summary、tags、tool_calls、notes。"),
         },
     }
 
@@ -113,6 +198,23 @@ func parseConversationSummary(raw string) (*conversationSummaryPayload, error) {
     if payload.ToolCalls == nil {
         payload.ToolCalls = json.RawMessage("[]")
     }
+
+    // Notes: 强制为 JSON object（jsonb 最稳妥）
+    if len(payload.NotesRaw) == 0 || string(bytes.TrimSpace(payload.NotesRaw)) == "null" {
+        // 为避免 DB NOT NULL 问题，使用空对象 {}
+        payload.NotesRaw = json.RawMessage("{}")
+    } else {
+        b := bytes.TrimSpace(payload.NotesRaw)
+        if len(b) == 0 || b[0] != '{' {
+            return nil, errors.New("AI 返回的 notes 必须是 JSON 对象（object），请修正提示词或模型输出")
+        }
+        // 可选：进一步校验为有效 JSON
+        var tmp map[string]any
+        if err := json.Unmarshal(b, &tmp); err != nil {
+            return nil, fmt.Errorf("notes 不是合法 JSON object: %w", err)
+        }
+    }
+
     return payload, nil
 }
 
@@ -125,9 +227,11 @@ func sanitizeJSONBlock(raw string) string {
     return strings.TrimSpace(raw)
 }
 
+// 在 persistConversationSummary 中直接使用 payload.NotesRaw 透传给 DB（jsonb）
 func (h *Host) persistConversationSummary(ctx context.Context, conversationID string, payload *conversationSummaryPayload) error {
-    // TODO: 使用 summaries 查询对象完成 upsert（计划第 5 步会接入实际存储）
     logger.Infof("persistConversationSummary conversation_id=%s summary_len=%d", conversationID, len(payload.Summary))
+    logger.Debugf("notes jsonb=%s", string(payload.NotesRaw))
+    // TODO: 将 payload.NotesRaw 作为 datatypes.JSON 或 json.RawMessage 写入 summaries 表
     return nil
 }
 
@@ -148,6 +252,7 @@ func SummarizeConversation(ctx context.Context, c *app.RequestContext) {
 }
 
 // summarizeConversation 承载实际的总结流程，由 Host.SummarizeConversation 调用。
+// summarizeConversation 返回 SummarizeResult 时直接返回 NotesJSON
 func (h *Host) summarizeConversation(conversationID string) (*SummarizeResult, error) {
     logger.Infof("SummarizeConversation start conversation_id=%s", conversationID)
 
@@ -174,7 +279,8 @@ func (h *Host) summarizeConversation(conversationID string) (*SummarizeResult, e
         Summary:       payload.Summary,
         Tags:          payload.Tags,
         ToolCallsJSON: string(payload.ToolCalls),
-        FilePaths:     payload.FilePaths,
+        NotesJSON:     payload.NotesRaw,
+        Notes:         jsonToStringMap(payload.NotesRaw),
     }, nil
 }
 

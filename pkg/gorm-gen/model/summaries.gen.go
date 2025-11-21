@@ -22,7 +22,7 @@ type Summaries struct {
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;type:timestamp without time zone;comment:删除时间" json:"deleted_at"`                                                   // 删除时间
 	Tags           string         `gorm:"column:tags;type:jsonb;not null;comment:摘要标签" json:"tags"`                                                                            // 摘要标签
 	ToolCalls      string         `gorm:"column:tool_calls;type:jsonb;not null;comment:工具调用" json:"tool_calls"`                                                                // 工具调用
-	FilePaths      string         `gorm:"column:file_paths;type:jsonb;not null;comment:文件路径" json:"file_paths"`                                                                // 文件路径
+	Notes          string         `gorm:"column:notes;type:jsonb;not null;comment:笔记" json:"notes"`                                                                            // 笔记
 }
 
 // TableName Summaries's table name

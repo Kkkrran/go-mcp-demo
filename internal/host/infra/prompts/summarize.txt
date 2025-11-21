@@ -12,8 +12,8 @@
 
 ## 输出格式
 
-你必须严格按照以下JSON格式输出，不要包含任何额外的文本、markdown代码块标记或解释：
-
+严格输出 JSON，字段：summary、tags、tool_calls、notes。
+特别说明：notes 必须是一个 JSON 对象（例如 {} 或 {"key":"value"}），不能返回字符串、数组或其它 stringified JSON。
 {
   "summary": "对话的核心摘要内容，200-300字",
   "tags": ["标签1", "标签2", "标签3"],
@@ -26,8 +26,12 @@
       "description": "工具调用的简要说明"
     }
   ],
-  "file_paths": ["文件路径1", "文件路径2"]
+  "notes": {
+    "todo": "后续需要接入 DB",
+    "file": "internal/host/infra/prompts/summarize.txt"
+  }
 }
+如果没有笔记，请返回空对象 "notes": {}。
 
 ## 注意事项
 

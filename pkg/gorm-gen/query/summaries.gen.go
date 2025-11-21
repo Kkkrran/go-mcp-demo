@@ -36,7 +36,7 @@ func newSummaries(db *gorm.DB, opts ...gen.DOOption) summaries {
 	_summaries.DeletedAt = field.NewField(tableName, "deleted_at")
 	_summaries.Tags = field.NewString(tableName, "tags")
 	_summaries.ToolCalls = field.NewString(tableName, "tool_calls")
-	_summaries.FilePaths = field.NewString(tableName, "file_paths")
+	_summaries.Notes = field.NewString(tableName, "notes")
 
 	_summaries.fillFieldMap()
 
@@ -55,7 +55,7 @@ type summaries struct {
 	DeletedAt      field.Field  // 删除时间
 	Tags           field.String // 摘要标签
 	ToolCalls      field.String // 工具调用
-	FilePaths      field.String // 文件路径
+	Notes          field.String // 笔记
 
 	fieldMap map[string]field.Expr
 }
@@ -80,7 +80,7 @@ func (s *summaries) updateTableName(table string) *summaries {
 	s.DeletedAt = field.NewField(table, "deleted_at")
 	s.Tags = field.NewString(table, "tags")
 	s.ToolCalls = field.NewString(table, "tool_calls")
-	s.FilePaths = field.NewString(table, "file_paths")
+	s.Notes = field.NewString(table, "notes")
 
 	s.fillFieldMap()
 
@@ -116,7 +116,7 @@ func (s *summaries) fillFieldMap() {
 	s.fieldMap["deleted_at"] = s.DeletedAt
 	s.fieldMap["tags"] = s.Tags
 	s.fieldMap["tool_calls"] = s.ToolCalls
-	s.fieldMap["file_paths"] = s.FilePaths
+	s.fieldMap["notes"] = s.Notes
 }
 
 func (s summaries) clone(db *gorm.DB) summaries {

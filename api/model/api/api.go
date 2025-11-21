@@ -1110,10 +1110,10 @@ func (p *SummarizeConversationRequest) String() string {
 }
 
 type SummarizeConversationResponse struct {
-	Summary       string   `thrift:"summary,1" form:"summary" json:"summary"`
-	Tags          []string `thrift:"tags,2,default,list<string>" form:"tags" json:"tags"`
-	ToolCallsJSON string   `thrift:"tool_calls_json,3" form:"tool_calls_json" json:"tool_calls_json"`
-	FilePaths     []string `thrift:"file_paths,4,default,list<string>" form:"file_paths" json:"file_paths"`
+	Summary       string            `thrift:"summary,1" form:"summary" json:"summary"`
+	Tags          []string          `thrift:"tags,2,default,list<string>" form:"tags" json:"tags"`
+	ToolCallsJSON string            `thrift:"tool_calls_json,3" form:"tool_calls_json" json:"tool_calls_json"`
+	Notes         map[string]string `thrift:"notes,4" form:"notes" json:"notes"`
 }
 
 func NewSummarizeConversationResponse() *SummarizeConversationResponse {
@@ -1135,15 +1135,15 @@ func (p *SummarizeConversationResponse) GetToolCallsJSON() (v string) {
 	return p.ToolCallsJSON
 }
 
-func (p *SummarizeConversationResponse) GetFilePaths() (v []string) {
-	return p.FilePaths
+func (p *SummarizeConversationResponse) GetNotes() (v map[string]string) {
+	return p.Notes
 }
 
 var fieldIDToName_SummarizeConversationResponse = map[int16]string{
 	1: "summary",
 	2: "tags",
 	3: "tool_calls_json",
-	4: "file_paths",
+	4: "notes",
 }
 
 func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error) {
@@ -1190,7 +1190,7 @@ func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error)
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.MAP {
 				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1272,26 +1272,32 @@ func (p *SummarizeConversationResponse) ReadField3(iprot thrift.TProtocol) error
 	return nil
 }
 func (p *SummarizeConversationResponse) ReadField4(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
+	_, _, size, err := iprot.ReadMapBegin()
 	if err != nil {
 		return err
 	}
-	_field := make([]string, 0, size)
+	_field := make(map[string]string, size)
 	for i := 0; i < size; i++ {
-
-		var _elem string
+		var _key string
 		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
-			_elem = v
+			_key = v
 		}
 
-		_field = append(_field, _elem)
+		var _val string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_val = v
+		}
+
+		_field[_key] = _val
 	}
-	if err := iprot.ReadListEnd(); err != nil {
+	if err := iprot.ReadMapEnd(); err != nil {
 		return err
 	}
-	p.FilePaths = _field
+	p.Notes = _field
 	return nil
 }
 
@@ -1395,18 +1401,21 @@ WriteFieldEndError:
 }
 
 func (p *SummarizeConversationResponse) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("file_paths", thrift.LIST, 4); err != nil {
+	if err = oprot.WriteFieldBegin("notes", thrift.MAP, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.STRING, len(p.FilePaths)); err != nil {
+	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.Notes)); err != nil {
 		return err
 	}
-	for _, v := range p.FilePaths {
+	for k, v := range p.Notes {
+		if err := oprot.WriteString(k); err != nil {
+			return err
+		}
 		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
-	if err := oprot.WriteListEnd(); err != nil {
+	if err := oprot.WriteMapEnd(); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

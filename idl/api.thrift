@@ -127,17 +127,17 @@ struct SummarizeConversationResponse{
         description: "工具调用的JSON字符串",
         type: "string"
     }')
-    4: list<string> file_paths(api.body="file_paths", openapi.property='{
-        title: "文件路径列表",
-        description: "会话中涉及的文件路径",
-        type: "array",
-        items: {type: "string"}
+    4: map<string,string> notes(api.body="notes", openapi.property='{
+        title: "笔记",
+        description: "AI 或用户针对总结写的任意键值笔记，包含文件路径等信息",
+        type: "object",
+        additionalProperties: { "type": "string" }
     }')
 }(
     openapi.schema='{
         title: "总结会话响应",
-        description: "包含会话总结、标签、工具调用和文件路径的响应",
-        required: ["summary", "tags", "tool_calls_json", "file_paths"]
+        description: "包含会话总结、标签、工具调用和笔记的响应",
+        required: ["summary", "tags", "tool_calls_json", "notes"]
     }'
 )
 

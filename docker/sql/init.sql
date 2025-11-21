@@ -50,7 +50,7 @@ create table summaries (
     deleted_at   TIMESTAMP,
     tags        jsonb        NOT NULL,
     tool_calls  jsonb        NOT NULL,
-    file_paths  jsonb        NOT NULL
+    notes  jsonb        NOT NULL
 );
 create index idx_summaries_conversation_id
     on summaries (conversation_id);
@@ -63,7 +63,7 @@ comment on column summaries.updated_at is '更新时间';
 comment on column summaries.deleted_at is '删除时间';
 comment on column summaries.tags is '摘要标签';
 comment on column summaries.tool_calls is '工具调用';
-comment on column summaries.file_paths is '文件路径';
+comment on column summaries.notes is '笔记';
 
 create table todolists(
     id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
