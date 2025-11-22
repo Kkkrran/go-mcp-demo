@@ -1,21 +1,18 @@
 package application
 
 import (
-	"regexp"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
-	api "github.com/FantasyRL/go-mcp-demo/api/model/api"
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/internal/host/infra"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
-	"github.com/cloudwego/hertz/pkg/app"
-	consts "github.com/cloudwego/hertz/pkg/protocol/consts"
 	openai "github.com/openai/openai-go/v2"
 )
 
