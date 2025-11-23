@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"flag"
+	"time"
+
 	"github.com/FantasyRL/go-mcp-demo/api/handler/api"
 	"github.com/FantasyRL/go-mcp-demo/api/router"
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
 	"github.com/FantasyRL/go-mcp-demo/pkg/utils"
-	"time"
 
 	sentinel "github.com/alibaba/sentinel-golang/api"
 	"github.com/alibaba/sentinel-golang/core/flow"
@@ -80,7 +81,6 @@ func main() {
 			})
 		}),
 	))
-
 	router.Register(h)
 	h.Spin()
 }

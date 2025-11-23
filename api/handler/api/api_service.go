@@ -151,3 +151,48 @@ func SummarizeConversation(ctx context.Context, c *app.RequestContext) {
 	}
 	pack.RespData(c, resp)
 }
+
+// GetLoginData .
+// @router /api/v1/user/login [POST]
+func GetLoginData(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.GetLoginDataRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(api.GetLoginDataResponse)
+
+	loginData, err := application.NewHost(ctx, clientSet).Login(req.StuID, req.Password)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+	resp.Identifier = loginData.Identifier
+	resp.Cookie = loginData.Cookie
+	resp.AccessToken = loginData.AccessToken
+	pack.RespData(c, resp)
+}
+
+// GetUserInfo .
+// @router /api/v1/user/info [GET]
+func GetUserInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.GetUserInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	//resp := new(api.GetUserInfoResponse)
+
+	info, err := application.NewHost(ctx, clientSet).GetUserInfo()
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+	pack.RespData(c, info)
+}

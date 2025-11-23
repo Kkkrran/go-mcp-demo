@@ -2,7 +2,10 @@
 
 package api
 
-import "github.com/cloudwego/hertz/pkg/app"
+import (
+	"github.com/FantasyRL/go-mcp-demo/api/mw"
+	"github.com/cloudwego/hertz/pkg/app"
+)
 
 func rootMw() []app.HandlerFunc {
 	// your code...
@@ -10,7 +13,6 @@ func rootMw() []app.HandlerFunc {
 }
 
 func _apiMw() []app.HandlerFunc {
-	// your code...
 	return nil
 }
 
@@ -41,10 +43,34 @@ func _templateMw() []app.HandlerFunc {
 
 func _conversationMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return []app.HandlerFunc{
+		mw.Auth(),
+	}
 }
 
 func _summarizeconversationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getaccesstokenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _userMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getuserinfoMw() []app.HandlerFunc {
+	return []app.HandlerFunc{
+		mw.GetHeaderParams(),
+		mw.Auth(),
+	}
+}
+
+func _getlogindataMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

@@ -95,6 +95,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/TemplateResponseBody'
+    /api/v1/user/info:
+        get:
+            tags:
+                - ApiService
+            description: 获取用户信息
+            operationId: ApiService_GetUserInfo
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserInfoResponseBody'
+    /api/v1/user/login:
+        post:
+            tags:
+                - ApiService
+            description: 获取jwch登录数据
+            operationId: ApiService_GetLoginData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/GetLoginDataRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetLoginDataResponseBody'
 components:
     schemas:
         ChatRequestBody:
@@ -150,6 +181,59 @@ components:
                     type: string
                     description: AI生成的回复片段
             description: 包含AI回复片段的流式聊天响应
+        GetLoginDataRequestBody:
+            title: 登录请求
+            required:
+                - stu_id
+                - password
+            type: object
+            properties:
+                stu_id:
+                    title: 学号
+                    type: string
+                    description: 福州大学学号
+                password:
+                    title: 密码
+                    type: string
+                    description: 用户的登录密码
+            description: 包含学号和密码的登录请求
+        GetLoginDataResponseBody:
+            title: 登录响应
+            required:
+                - identifier
+                - cookie
+                - access_token
+            type: object
+            properties:
+                identifier:
+                    title: 用户ID
+                    type: string
+                    description: 登录成功后返回的用户唯一标识符
+                cookie:
+                    title: 会话Cookie
+                    type: string
+                    description: 登录成功后返回的会话Cookie
+                access_token:
+                    title: 访问令牌
+                    type: string
+                    description: 登录成功后返回的访问令牌
+            description: 包含用户ID和会话Cookie的登录响应
+        GetUserInfoResponseBody:
+            title: 用户信息响应
+            required:
+                - user_id
+                - username
+            type: object
+            properties:
+                user_id:
+                    title: 用户ID
+                    type: string
+                    description: 用户的唯一标识符
+                username:
+                    title: 用户名
+                    type: string
+                    description: 用户的登录名
+            description: 包含用户ID和用户名的响应
         SummarizeConversationRequestBody:
             title: 总结会话请求
             required:

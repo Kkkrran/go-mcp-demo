@@ -139,6 +139,76 @@ struct SummarizeConversationResponse{
     }'
 )
 
+struct GetLoginDataRequest{
+    1: string stu_id(api.body="stu_id", openapi.property='{
+        title: "学号",
+        description: "福州大学学号",
+        type: "string"
+    }')
+    2: string password(api.body="password", openapi.property='{
+        title: "密码",
+        description: "用户的登录密码",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "登录请求",
+        description: "包含学号和密码的登录请求",
+        required: ["stu_id", "password"]
+    }'
+)
+
+struct GetLoginDataResponse{
+    1: string identifier(api.body="identifier", openapi.property='{
+        title: "用户ID",
+        description: "登录成功后返回的用户唯一标识符",
+        type: "string"
+    }')
+    2: string cookie(api.body="cookie", openapi.property='{
+        title: "会话Cookie",
+        description: "登录成功后返回的会话Cookie",
+        type: "string"
+    }')
+    3: string access_token(api.body="access_token", openapi.property='{
+        title: "访问令牌",
+        description: "登录成功后返回的访问令牌",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "登录响应",
+        description: "包含用户ID和会话Cookie的登录响应",
+        required: ["identifier", "cookie","access_token"]
+    }'
+)
+
+struct GetUserInfoRequest {
+}(
+    openapi.schema='{
+        title: "用户信息请求",
+        description: "请求用户的基本信息"
+    }'
+)
+
+struct GetUserInfoResponse {
+    1: string user_id(api.body="user_id", openapi.property='{
+        title: "用户ID",
+        description: "用户的唯一标识符",
+        type: "string"
+    }')
+    2: string username(api.body="username", openapi.property='{
+        title: "用户名",
+        description: "用户的登录名",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "用户信息响应",
+        description: "包含用户ID和用户名的响应",
+        required: ["user_id", "username"]
+    }'
+)
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
@@ -148,4 +218,8 @@ service ApiService {
     TemplateResponse Template(1: TemplateRequest req)(api.post="/api/v1/template")
     // 总结会话
     SummarizeConversationResponse SummarizeConversation(1: SummarizeConversationRequest req)(api.post="/api/v1/conversation/summarize")
+    // 获取jwch登录数据
+    GetLoginDataResponse GetLoginData(1: GetLoginDataRequest req)(api.post="/api/v1/user/login")
+    // 获取用户信息
+    GetUserInfoResponse GetUserInfo(1: GetUserInfoRequest req)(api.get="/api/v1/user/info")
 }
