@@ -80,3 +80,35 @@ func _getconversationhistoryMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _deletetodoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _todoMw() []app.HandlerFunc {
+	return []app.HandlerFunc{
+		mw.GetHeaderParams(),
+		mw.Auth(),
+	}
+}
+
+func _gettodoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listtodoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createtodoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatetodoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

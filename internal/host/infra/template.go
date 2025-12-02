@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+
 	"github.com/FantasyRL/go-mcp-demo/internal/host/repository"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/db"
 	"github.com/FantasyRL/go-mcp-demo/pkg/gorm-gen/model"
@@ -126,4 +127,146 @@ func (r *TemplateRepository) GetConversationByID(ctx context.Context, id string)
 		return nil, nil
 	}
 	return conv, nil
+}
+
+// CreateTodo 创建待办事项
+func (r *TemplateRepository) CreateTodo(ctx context.Context, todo *model.Todolists) error {
+	d := r.db.Get(ctx)
+	return d.WithContext(ctx).Todolists.Create(todo)
+}
+
+// GetTodoByID 通过ID获取待办事项
+func (r *TemplateRepository) GetTodoByID(ctx context.Context, id string, userID string) (*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	todo, err := d.WithContext(ctx).Todolists.
+		Where(d.Todolists.ID.Eq(id)).
+		Where(d.Todolists.UserID.Eq(userID)).
+		First()
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return todo, nil
+}
+
+// ListTodosByUserID 获取用户的所有待办事项列表
+func (r *TemplateRepository) ListTodosByUserID(ctx context.Context, userID string) ([]*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	todos, err := d.WithContext(ctx).Todolists.
+		Where(d.Todolists.UserID.Eq(userID)).
+		Order(d.Todolists.CreatedAt.Desc()).
+		Find()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+// ListTodosByStatus 根据状态获取待办事项列表
+func (r *TemplateRepository) ListTodosByStatus(ctx context.Context, userID string, status int16) ([]*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	todos, err := d.WithContext(ctx).Todolists.
+		Where(d.Todolists.UserID.Eq(userID)).
+		Where(d.Todolists.Status.Eq(status)).
+		Order(d.Todolists.CreatedAt.Desc()).
+		Find()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+// ListTodosByPriority 根据优先级获取待办事项列表
+func (r *TemplateRepository) ListTodosByPriority(ctx context.Context, userID string, priority int16) ([]*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	todos, err := d.WithContext(ctx).Todolists.
+		Where(d.Todolists.UserID.Eq(userID)).
+		Where(d.Todolists.Priority.Eq(priority)).
+		Order(d.Todolists.CreatedAt.Desc()).
+		Find()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+// ListTodosByCategory 根据分类获取待办事项列表
+func (r *TemplateRepository) ListTodosByCategory(ctx context.Context, userID string, category string) ([]*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	todos, err := d.WithContext(ctx).Todolists.
+		Where(d.Todolists.UserID.Eq(userID)).
+		Where(d.Todolists.Category.Eq(category)).
+		Order(d.Todolists.CreatedAt.Desc()).
+		Find()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+// ListTodosByFilters 根据多个条件筛选获取待办事项列表
+func (r *TemplateRepository) ListTodosByFilters(ctx context.Context, userID string, status *int16, priority *int16, category *string) ([]*model.Todolists, error) {
+	d := r.db.Get(ctx)
+	q := d.WithContext(ctx).Todolists.Where(d.Todolists.UserID.Eq(userID))
+
+	// 根据状态筛选
+	if status != nil {
+		q = q.Where(d.Todolists.Status.Eq(*status))
+	}
+
+	// 根据优先级筛选
+	if priority != nil {
+		q = q.Where(d.Todolists.Priority.Eq(*priority))
+	}
+
+	// 根据分类筛选
+	if category != nil && *category != "" {
+		q = q.Where(d.Todolists.Category.Eq(*category))
+	}
+
+	// 按创建时间倒序
+	todos, err := q.Order(d.Todolists.CreatedAt.Desc()).Find()
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
+}
+
+// UpdateTodo 更新待办事项
+func (r *TemplateRepository) UpdateTodo(ctx context.Context, todo *model.Todolists) error {
+	d := r.db.Get(ctx)
+	// 使用Save会更新所有字段，包括零值
+	return d.WithContext(ctx).Todolists.Save(todo)
+}
+
+// DeleteTodo 删除待办事项（软删除）
+func (r *TemplateRepository) DeleteTodo(ctx context.Context, id string, userID string) error {
+	d := r.db.Get(ctx)
+	// 先查询，确保是该用户的待办事项
+	todo, err := r.GetTodoByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if todo == nil {
+		return gorm.ErrRecordNotFound
+	}
+
+	_, err = d.WithContext(ctx).Todolists.
+		Where(d.Todolists.ID.Eq(id)).
+		Where(d.Todolists.UserID.Eq(userID)).
+		Delete()
+
+	return err
 }

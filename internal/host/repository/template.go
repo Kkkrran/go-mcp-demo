@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/FantasyRL/go-mcp-demo/pkg/gorm-gen/model"
 	"github.com/openai/openai-go/v2"
 )
@@ -16,4 +17,23 @@ type TemplateRepository interface {
 	UpsertConversation(ctx context.Context, userID string, conversationID string, openaiMessages []openai.ChatCompletionMessageParamUnion) error
 	// GetConversationByID 通过ID获取对话记录
 	GetConversationByID(ctx context.Context, id string) (*model.Conversations, error)
+
+	// CreateTodo 创建待办事项
+	CreateTodo(ctx context.Context, todo *model.Todolists) error
+	// GetTodoByID 通过ID获取待办事项
+	GetTodoByID(ctx context.Context, id string, userID string) (*model.Todolists, error)
+	// ListTodosByUserID 获取用户的所有待办事项列表
+	ListTodosByUserID(ctx context.Context, userID string) ([]*model.Todolists, error)
+	// ListTodosByStatus 根据状态获取待办事项列表
+	ListTodosByStatus(ctx context.Context, userID string, status int16) ([]*model.Todolists, error)
+	// ListTodosByPriority 根据优先级获取待办事项列表
+	ListTodosByPriority(ctx context.Context, userID string, priority int16) ([]*model.Todolists, error)
+	// ListTodosByCategory 根据分类获取待办事项列表
+	ListTodosByCategory(ctx context.Context, userID string, category string) ([]*model.Todolists, error)
+	// ListTodosByFilters 根据多个条件筛选获取待办事项列表
+	ListTodosByFilters(ctx context.Context, userID string, status *int16, priority *int16, category *string) ([]*model.Todolists, error)
+	// UpdateTodo 更新待办事项
+	UpdateTodo(ctx context.Context, todo *model.Todolists) error
+	// DeleteTodo 删除待办事项
+	DeleteTodo(ctx context.Context, id string, userID string) error
 }
