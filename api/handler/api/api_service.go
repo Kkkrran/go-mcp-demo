@@ -5,9 +5,10 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"io"
+
 	"github.com/FantasyRL/go-mcp-demo/pkg/errno"
 	"github.com/FantasyRL/go-mcp-demo/pkg/utils"
-	"io"
 
 	api "github.com/FantasyRL/go-mcp-demo/api/model/api"
 	"github.com/FantasyRL/go-mcp-demo/api/pack"
@@ -235,5 +236,150 @@ func GetConversationHistory(ctx context.Context, c *app.RequestContext) {
 	resp.ConversationID = history.ID
 	resp.Messages = history.Messages
 
+	pack.RespData(c, resp)
+}
+
+// CreateTodo .
+// @router /api/v1/todo [POST]
+func CreateTodo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.CreateTodoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	todoID, err := application.NewHost(ctx, clientSet).CreateTodoLogic(&req, uid)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.CreateTodoResponse{
+		ID: todoID,
+	}
+	pack.RespData(c, resp)
+}
+
+// GetTodo .
+// @router /api/v1/todo [GET]
+func GetTodo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.GetTodoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	todo, err := application.NewHost(ctx, clientSet).GetTodoLogic(req.ID, uid)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.GetTodoResponse{
+		Todo: pack.BuildTodoItem(todo),
+	}
+	pack.RespData(c, resp)
+}
+
+// ListTodo .
+// @router /api/v1/todo/list [GET]
+func ListTodo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.ListTodoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	todos, err := application.NewHost(ctx, clientSet).ListTodoLogic(uid, req.Status, req.Priority, req.Category)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.ListTodoResponse{
+		Todos: pack.BuildTodoList(todos),
+	}
+	pack.RespData(c, resp)
+}
+
+// UpdateTodo .
+// @router /api/v1/todo [PUT]
+func UpdateTodo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.UpdateTodoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	err = application.NewHost(ctx, clientSet).UpdateTodoLogic(&req, uid)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.UpdateTodoResponse{
+		ID: req.ID,
+	}
+	pack.RespData(c, resp)
+}
+
+// DeleteTodo .
+// @router /api/v1/todo [DELETE]
+func DeleteTodo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.DeleteTodoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	err = application.NewHost(ctx, clientSet).DeleteTodoLogic(req.ID, uid)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.DeleteTodoResponse{
+		ID: req.ID,
+	}
 	pack.RespData(c, resp)
 }

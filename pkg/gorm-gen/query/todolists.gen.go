@@ -36,8 +36,9 @@ func newTodolists(db *gorm.DB, opts ...gen.DOOption) todolists {
 	_todolists.EndTime = field.NewTime(tableName, "end_time")
 	_todolists.IsAllDay = field.NewInt16(tableName, "is_all_day")
 	_todolists.Status = field.NewInt16(tableName, "status")
+	_todolists.Priority = field.NewInt16(tableName, "priority")
 	_todolists.RemindAt = field.NewTime(tableName, "remind_at")
-	_todolists.Tag = field.NewString(tableName, "tag")
+	_todolists.Category = field.NewString(tableName, "category")
 	_todolists.CreatedAt = field.NewTime(tableName, "created_at")
 	_todolists.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_todolists.DeletedAt = field.NewField(tableName, "deleted_at")
@@ -59,11 +60,12 @@ type todolists struct {
 	EndTime   field.Time   // 待办事项结束时间
 	IsAllDay  field.Int16  // 是否为全天事项，0-否，1-是
 	Status    field.Int16  // 待办事项状态，0-未完成，1-已完成
+	Priority  field.Int16  // 优先级，1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急
 	RemindAt  field.Time   // 待办事项提醒时间
-	Tag       field.String // 待办事项标签
-	CreatedAt field.Time   // 创建时间
-	UpdatedAt field.Time   // 更新时间
-	DeletedAt field.Field  // 删除时间
+	Category  field.String // 待办事项标签
+	CreatedAt field.Time
+	UpdatedAt field.Time
+	DeletedAt field.Field
 
 	fieldMap map[string]field.Expr
 }
@@ -88,8 +90,9 @@ func (t *todolists) updateTableName(table string) *todolists {
 	t.EndTime = field.NewTime(table, "end_time")
 	t.IsAllDay = field.NewInt16(table, "is_all_day")
 	t.Status = field.NewInt16(table, "status")
+	t.Priority = field.NewInt16(table, "priority")
 	t.RemindAt = field.NewTime(table, "remind_at")
-	t.Tag = field.NewString(table, "tag")
+	t.Category = field.NewString(table, "category")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 	t.DeletedAt = field.NewField(table, "deleted_at")
@@ -119,7 +122,7 @@ func (t *todolists) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *todolists) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 13)
+	t.fieldMap = make(map[string]field.Expr, 14)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["user_id"] = t.UserID
 	t.fieldMap["title"] = t.Title
@@ -128,8 +131,9 @@ func (t *todolists) fillFieldMap() {
 	t.fieldMap["end_time"] = t.EndTime
 	t.fieldMap["is_all_day"] = t.IsAllDay
 	t.fieldMap["status"] = t.Status
+	t.fieldMap["priority"] = t.Priority
 	t.fieldMap["remind_at"] = t.RemindAt
-	t.fieldMap["tag"] = t.Tag
+	t.fieldMap["category"] = t.Category
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["deleted_at"] = t.DeletedAt

@@ -121,6 +121,118 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/TemplateResponseBody'
+    /api/v1/todo/create:
+        post:
+            tags:
+                - ApiService
+            description: |-
+                待办事项管理
+                创建待办事项
+            operationId: ApiService_CreateTodo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateTodoRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateTodoResponseBody'
+    /api/v1/todo/delete:
+        delete:
+            tags:
+                - ApiService
+            description: 删除待办事项
+            operationId: ApiService_DeleteTodo
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    title: 待办事项ID
+                    type: string
+                    description: 要删除的待办事项ID
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteTodoResponseBody'
+    /api/v1/todo/detail:
+        get:
+            tags:
+                - ApiService
+            description: 获取待办事项详情
+            operationId: ApiService_GetTodo
+            parameters:
+                - name: id
+                  in: query
+                  schema:
+                    title: 待办事项ID
+                    type: string
+                    description: 要查询的待办事项ID
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetTodoResponseBody'
+    /api/v1/todo/list:
+        get:
+            tags:
+                - ApiService
+            description: 获取待办事项列表
+            operationId: ApiService_ListTodo
+            parameters:
+                - name: status
+                  in: query
+                  schema:
+                    title: 状态筛选
+                    type: integer
+                    description: 0-未完成，1-已完成，不传则返回全部
+                    format: int16
+                - name: priority
+                  in: query
+                  schema:
+                    title: 优先级筛选
+                    type: integer
+                    description: 1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急
+                    format: int16
+                - name: category
+                  in: query
+                  schema:
+                    title: 分类筛选
+                    type: string
+                    description: 按分类筛选待办事项
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTodoResponseBody'
+    /api/v1/todo/update:
+        put:
+            tags:
+                - ApiService
+            description: 更新待办事项
+            operationId: ApiService_UpdateTodo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateTodoRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateTodoResponseBody'
     /api/v1/user/info:
         get:
             tags:
@@ -218,6 +330,76 @@ components:
                     title: 对话ID UUID
                     type: string
             description: 包含AI回复片段的流式聊天响应
+        CreateTodoRequestBody:
+            title: 创建待办事项请求
+            required:
+                - title
+                - content
+                - start_time
+                - end_time
+                - priority
+            type: object
+            properties:
+                title:
+                    title: 待办事项标题
+                    type: string
+                    description: 待办事项的标题
+                content:
+                    title: 待办事项内容
+                    type: string
+                    description: 待办事项的详细内容
+                start_time:
+                    title: 开始时间
+                    type: integer
+                    description: 待办事项开始时间，unix毫秒时间戳
+                    format: int64
+                end_time:
+                    title: 结束时间
+                    type: integer
+                    description: 待办事项结束时间，unix毫秒时间戳
+                    format: int64
+                is_all_day:
+                    title: 是否全天
+                    type: integer
+                    description: 是否为全天事项，0-否，1-是
+                    format: int16
+                priority:
+                    title: 优先级
+                    type: integer
+                    description: 1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急
+                    format: int16
+                remind_at:
+                    title: 提醒时间
+                    type: integer
+                    description: 待办事项提醒时间，unix毫秒时间戳
+                    format: int64
+                category:
+                    title: 分类
+                    type: string
+                    description: 待办事项分类
+            description: 创建待办事项的请求参数
+        CreateTodoResponseBody:
+            title: 创建待办事项响应
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    title: 待办事项ID
+                    type: string
+                    description: 创建成功的待办事项ID
+            description: 返回创建成功的待办事项ID
+        DeleteTodoResponseBody:
+            title: 删除待办事项响应
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    title: 待办事项ID
+                    type: string
+                    description: 已删除的待办事项ID
+            description: 返回已删除的待办事项ID
         GetConversationHistoryResponseBody:
             title: 获取历史响应
             required:
@@ -269,6 +451,15 @@ components:
                     type: string
                     description: 登录成功后返回的访问令牌
             description: 包含用户ID和会话Cookie的登录响应
+        GetTodoResponseBody:
+            title: 获取待办事项响应
+            required:
+                - todo
+            type: object
+            properties:
+                todo:
+                    $ref: '#/components/schemas/TodoItem'
+            description: 返回待办事项详细信息
         GetUserInfoResponseBody:
             title: 用户信息响应
             required:
@@ -285,6 +476,18 @@ components:
                     type: string
                     description: 用户的登录名
             description: 包含用户ID和用户名的响应
+        ListTodoResponseBody:
+            title: 待办事项列表响应
+            required:
+                - todos
+            type: object
+            properties:
+                todos:
+                    title: 待办事项列表
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TodoItem'
+            description: 返回待办事项列表
         SummarizeConversationRequestBody:
             title: 总结会话请求
             required:
@@ -346,6 +549,113 @@ components:
                 user:
                     $ref: '#/components/schemas/User'
             description: 示例响应
+        TodoItem:
+            title: 待办事项
+            type: object
+            properties:
+                id:
+                    title: 待办事项ID
+                    type: string
+                title:
+                    title: 标题
+                    type: string
+                content:
+                    title: 内容
+                    type: string
+                start_time:
+                    title: 开始时间
+                    type: integer
+                    format: int64
+                end_time:
+                    title: 结束时间
+                    type: integer
+                    format: int64
+                is_all_day:
+                    title: 是否全天
+                    type: integer
+                    format: int16
+                status:
+                    title: 状态
+                    type: integer
+                    description: 0-未完成，1-已完成
+                    format: int16
+                priority:
+                    title: 优先级
+                    type: integer
+                    description: 1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急
+                    format: int16
+                remind_at:
+                    title: 提醒时间
+                    type: integer
+                    format: int64
+                category:
+                    title: 分类
+                    type: string
+                created_at:
+                    title: 创建时间
+                    type: integer
+                    format: int64
+                updated_at:
+                    title: 更新时间
+                    type: integer
+                    format: int64
+            description: 待办事项详细信息
+        UpdateTodoRequestBody:
+            title: 更新待办事项请求
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    title: 待办事项ID
+                    type: string
+                    description: 要更新的待办事项ID
+                title:
+                    title: 标题
+                    type: string
+                content:
+                    title: 内容
+                    type: string
+                start_time:
+                    title: 开始时间
+                    type: integer
+                    format: int64
+                end_time:
+                    title: 结束时间
+                    type: integer
+                    format: int64
+                is_all_day:
+                    title: 是否全天
+                    type: integer
+                    format: int16
+                status:
+                    title: 状态
+                    type: integer
+                    description: 0-未完成，1-已完成
+                    format: int16
+                priority:
+                    title: 优先级
+                    type: integer
+                    description: 1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急
+                    format: int16
+                remind_at:
+                    title: 提醒时间
+                    type: integer
+                    format: int64
+                category:
+                    title: 分类
+                    type: string
+            description: 更新待办事项信息，只传需要更新的字段
+        UpdateTodoResponseBody:
+            title: 更新待办事项响应
+            required:
+                - id
+            type: object
+            properties:
+                id:
+                    title: 待办事项ID
+                    type: string
+            description: 返回更新成功的待办事项ID
         User:
             title: 用户信息
             required:

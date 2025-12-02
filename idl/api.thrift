@@ -260,6 +260,294 @@ struct GetUserInfoResponse {
     }'
 )
 
+struct CreateTodoRequest {
+    1: string title(api.body="title", openapi.property='{
+        title: "待办事项标题",
+        description: "待办事项的标题",
+        type: "string"
+    }')
+    2: string content(api.body="content", openapi.property='{
+        title: "待办事项内容",
+        description: "待办事项的详细内容",
+        type: "string"
+    }')
+    3: i64 start_time(api.body="start_time", openapi.property='{
+        title: "开始时间",
+        description: "待办事项开始时间，unix毫秒时间戳",
+        type: "integer",
+        format: "int64"
+    }')
+    4: i64 end_time(api.body="end_time", openapi.property='{
+        title: "结束时间",
+        description: "待办事项结束时间，unix毫秒时间戳",
+        type: "integer",
+        format: "int64"
+    }')
+    5: optional i16 is_all_day(api.body="is_all_day", openapi.property='{
+        title: "是否全天",
+        description: "是否为全天事项，0-否，1-是",
+        type: "integer"
+    }')
+    6: i16 priority(api.body="priority", openapi.property='{
+        title: "优先级",
+        description: "1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急",
+        type: "integer"
+    }')
+    7: optional i64 remind_at(api.body="remind_at", openapi.property='{
+        title: "提醒时间",
+        description: "待办事项提醒时间，unix毫秒时间戳",
+        type: "integer",
+        format: "int64"
+    }')
+    8: optional string category(api.body="category", openapi.property='{
+        title: "分类",
+        description: "待办事项分类",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "创建待办事项请求",
+        description: "创建待办事项的请求参数",
+        required: ["title", "content", "start_time", "end_time", "priority"]
+    }'
+)
+
+struct CreateTodoResponse {
+    1: string id(api.body="id", openapi.property='{
+        title: "待办事项ID",
+        description: "创建成功的待办事项ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "创建待办事项响应",
+        description: "返回创建成功的待办事项ID",
+        required: ["id"]
+    }'
+)
+
+struct GetTodoRequest {
+    1: string id(api.query="id", openapi.property='{
+        title: "待办事项ID",
+        description: "要查询的待办事项ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "获取待办事项请求",
+        description: "根据ID获取待办事项",
+        required: ["id"]
+    }'
+)
+
+struct TodoItem {
+    1: string id(api.body="id", openapi.property='{
+        title: "待办事项ID",
+        type: "string"
+    }')
+    2: string title(api.body="title", openapi.property='{
+        title: "标题",
+        type: "string"
+    }')
+    3: string content(api.body="content", openapi.property='{
+        title: "内容",
+        type: "string"
+    }')
+    4: i64 start_time(api.body="start_time", openapi.property='{
+        title: "开始时间",
+        type: "integer",
+        format: "int64"
+    }')
+    5: i64 end_time(api.body="end_time", openapi.property='{
+        title: "结束时间",
+        type: "integer",
+        format: "int64"
+    }')
+    6: i16 is_all_day(api.body="is_all_day", openapi.property='{
+        title: "是否全天",
+        type: "integer"
+    }')
+    7: i16 status(api.body="status", openapi.property='{
+        title: "状态",
+        description: "0-未完成，1-已完成",
+        type: "integer"
+    }')
+    8: i16 priority(api.body="priority", openapi.property='{
+        title: "优先级",
+        description: "1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急",
+        type: "integer"
+    }')
+    9: optional i64 remind_at(api.body="remind_at", openapi.property='{
+        title: "提醒时间",
+        type: "integer",
+        format: "int64"
+    }')
+    10: optional string category(api.body="category", openapi.property='{
+        title: "分类",
+        type: "string"
+    }')
+    11: i64 created_at(api.body="created_at", openapi.property='{
+        title: "创建时间",
+        type: "integer",
+        format: "int64"
+    }')
+    12: i64 updated_at(api.body="updated_at", openapi.property='{
+        title: "更新时间",
+        type: "integer",
+        format: "int64"
+    }')
+}(
+    openapi.schema='{
+        title: "待办事项",
+        description: "待办事项详细信息"
+    }'
+)
+
+struct GetTodoResponse {
+    1: TodoItem todo(api.body="todo", openapi.property='{
+        title: "待办事项",
+        type: "object"
+    }')
+}(
+    openapi.schema='{
+        title: "获取待办事项响应",
+        description: "返回待办事项详细信息",
+        required: ["todo"]
+    }'
+)
+
+struct ListTodoRequest {
+    1: optional i16 status(api.query="status", openapi.property='{
+        title: "状态筛选",
+        description: "0-未完成，1-已完成，不传则返回全部",
+        type: "integer"
+    }')
+    2: optional i16 priority(api.query="priority", openapi.property='{
+        title: "优先级筛选",
+        description: "1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急",
+        type: "integer"
+    }')
+    3: optional string category(api.query="category", openapi.property='{
+        title: "分类筛选",
+        description: "按分类筛选待办事项",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "待办事项列表请求",
+        description: "获取待办事项列表，支持按状态、优先级和分类筛选"
+    }'
+)
+
+struct ListTodoResponse {
+    1: list<TodoItem> todos(api.body="todos", openapi.property='{
+        title: "待办事项列表",
+        type: "array"
+    }')
+}(
+    openapi.schema='{
+        title: "待办事项列表响应",
+        description: "返回待办事项列表",
+        required: ["todos"]
+    }'
+)
+
+struct UpdateTodoRequest {
+    1: string id(api.body="id", openapi.property='{
+        title: "待办事项ID",
+        description: "要更新的待办事项ID",
+        type: "string"
+    }')
+    2: optional string title(api.body="title", openapi.property='{
+        title: "标题",
+        type: "string"
+    }')
+    3: optional string content(api.body="content", openapi.property='{
+        title: "内容",
+        type: "string"
+    }')
+    4: optional i64 start_time(api.body="start_time", openapi.property='{
+        title: "开始时间",
+        type: "integer",
+        format: "int64"
+    }')
+    5: optional i64 end_time(api.body="end_time", openapi.property='{
+        title: "结束时间",
+        type: "integer",
+        format: "int64"
+    }')
+    6: optional i16 is_all_day(api.body="is_all_day", openapi.property='{
+        title: "是否全天",
+        type: "integer"
+    }')
+    7: optional i16 status(api.body="status", openapi.property='{
+        title: "状态",
+        description: "0-未完成，1-已完成",
+        type: "integer"
+    }')
+    8: optional i16 priority(api.body="priority", openapi.property='{
+        title: "优先级",
+        description: "1-紧急且重要，2-重要不紧急，3-紧急不重要，4-不重要不紧急",
+        type: "integer"
+    }')
+    9: optional i64 remind_at(api.body="remind_at", openapi.property='{
+        title: "提醒时间",
+        type: "integer",
+        format: "int64"
+    }')
+    10: optional string category(api.body="category", openapi.property='{
+        title: "分类",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "更新待办事项请求",
+        description: "更新待办事项信息，只传需要更新的字段",
+        required: ["id"]
+    }'
+)
+
+struct UpdateTodoResponse {
+    1: string id(api.body="id", openapi.property='{
+        title: "待办事项ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "更新待办事项响应",
+        description: "返回更新成功的待办事项ID",
+        required: ["id"]
+    }'
+)
+
+struct DeleteTodoRequest {
+    1: string id(api.query="id", openapi.property='{
+        title: "待办事项ID",
+        description: "要删除的待办事项ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "删除待办事项请求",
+        description: "根据ID删除待办事项",
+        required: ["id"]
+    }'
+)
+
+struct DeleteTodoResponse {
+    1: string id(api.body="id", openapi.property='{
+        title: "待办事项ID",
+        description: "已删除的待办事项ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "删除待办事项响应",
+        description: "返回已删除的待办事项ID",
+        required: ["id"]
+    }'
+)
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
@@ -275,4 +563,16 @@ service ApiService {
     GetLoginDataResponse GetLoginData(1: GetLoginDataRequest req)(api.post="/api/v1/user/login")
     // 获取用户信息
     GetUserInfoResponse GetUserInfo(1: GetUserInfoRequest req)(api.get="/api/v1/user/info")
+    
+    // 待办事项管理
+    // 创建待办事项
+    CreateTodoResponse CreateTodo(1: CreateTodoRequest req)(api.post="/api/v1/todo/create")
+    // 获取待办事项详情
+    GetTodoResponse GetTodo(1: GetTodoRequest req)(api.get="/api/v1/todo/detail")
+    // 获取待办事项列表
+    ListTodoResponse ListTodo(1: ListTodoRequest req)(api.get="/api/v1/todo/list")
+    // 更新待办事项
+    UpdateTodoResponse UpdateTodo(1: UpdateTodoRequest req)(api.put="/api/v1/todo/update")
+    // 删除待办事项
+    DeleteTodoResponse DeleteTodo(1: DeleteTodoRequest req)(api.delete="/api/v1/todo/delete")
 }
