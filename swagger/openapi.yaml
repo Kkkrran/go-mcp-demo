@@ -391,6 +391,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/GetLoginDataResponseBody'
+    /api/v1/user/setting:
+        put:
+            tags:
+                - ApiService
+            description: 更新用户设置
+            operationId: ApiService_UpdateUserSetting
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateUserSettingRequestBody'
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateUserSettingResponseBody'
 components:
     schemas:
         BaseResp:
@@ -1050,6 +1068,28 @@ components:
                     title: 待办事项ID
                     type: string
             description: 返回更新成功的待办事项ID
+        UpdateUserSettingRequestBody:
+            title: 更新用户设置请求
+            required:
+                - setting_json
+            type: object
+            properties:
+                setting_json:
+                    title: 用户设置JSON
+                    type: string
+                    description: 用户设置JSON字符串
+            description: 更新用户个性化设置
+        UpdateUserSettingResponseBody:
+            title: 更新用户设置响应
+            required:
+                - user_id
+            type: object
+            properties:
+                user_id:
+                    title: 用户ID
+                    type: string
+                    description: 更新成功的用户ID
+            description: 返回更新结果
         User:
             title: 用户信息
             required:

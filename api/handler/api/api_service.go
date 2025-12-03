@@ -216,6 +216,34 @@ func GetUserInfo(ctx context.Context, c *app.RequestContext) {
 	pack.RespData(c, info)
 }
 
+// UpdateUserSetting .
+// @router /api/v1/user/setting [PUT]
+func UpdateUserSetting(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.UpdateUserSettingRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	err = application.NewHost(ctx, clientSet).UpdateUserSetting(uid, req.SettingJSON)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	pack.RespData(c, api.UpdateUserSettingResponse{
+		UserID: uid,
+	})
+}
+
 // GetConversationHistory .
 // @router /api/v1/conversation/history [GET]
 func GetConversationHistory(ctx context.Context, c *app.RequestContext) {

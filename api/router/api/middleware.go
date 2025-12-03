@@ -175,3 +175,8 @@ func _listconversationsMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _updateusersettingMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

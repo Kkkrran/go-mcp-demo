@@ -836,6 +836,34 @@ struct CourseTermListResponse{
     }')
 }
 
+struct UpdateUserSettingRequest {
+    1: string setting_json(api.body="setting_json", openapi.property='{
+        title: "用户设置JSON",
+        description: "用户设置JSON字符串",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "更新用户设置请求",
+        description: "更新用户个性化设置",
+        required: ["setting_json"]
+    }'
+)
+
+struct UpdateUserSettingResponse {
+    1: string user_id(api.body="user_id", openapi.property='{
+        title: "用户ID",
+        description: "更新成功的用户ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "更新用户设置响应",
+        description: "返回更新结果",
+        required: ["user_id"]
+    }'
+)
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
@@ -853,6 +881,8 @@ service ApiService {
     GetLoginDataResponse GetLoginData(1: GetLoginDataRequest req)(api.post="/api/v1/user/login")
     // 获取用户信息
     GetUserInfoResponse GetUserInfo(1: GetUserInfoRequest req)(api.get="/api/v1/user/info")
+    // 更新用户设置
+    UpdateUserSettingResponse UpdateUserSetting(1: UpdateUserSettingRequest req)(api.put="/api/v1/user/setting")
     
     // 待办事项管理
     // 创建待办事项
