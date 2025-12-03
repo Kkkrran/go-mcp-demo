@@ -864,6 +864,55 @@ struct UpdateUserSettingResponse {
     }'
 )
 
+struct TermListRequest {}(
+    openapi.schema='{
+        title: "获取学期列表请求",
+        description: "获取所有可用的学期列表"
+    }'
+)
+
+struct TermListResponse {
+    1: required model.BaseResp base(api.body="base", openapi.property='{
+        title: "基础响应",
+        description: "响应的基础信息",
+        type: "object"
+    }')
+    2: required model.TermList term_lists(api.body="term_lists", openapi.property='{
+        title: "学期列表",
+        description: "包含所有可用学期的列表",
+        type: "object"
+    }')
+}
+
+// 学期信息
+struct TermRequest {
+    1: required string term(api.query="term", openapi.property='{
+        title: "学期标识",
+        description: "要查询的学期标识，例如202501",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "获取学期详情请求",
+        description: "根据学期标识获取学期详情",
+        required: ["term"]
+    }'
+)
+
+struct TermResponse {
+    1: required model.BaseResp base(api.body="base", openapi.property='{
+        title: "基础响应",
+        description: "响应的基础信息",
+        type: "object"
+    }')
+    2: required model.TermInfo term_info(api.body="term_info", openapi.property='{
+        title: "学期详情",
+        description: "指定学期的详细信息",
+        type: "object"
+    }')
+}
+
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
@@ -912,5 +961,9 @@ service ApiService {
     // 获取课表
     CourseListResponse GetCourseList(1: CourseListRequest req)(api.get="/api/v1/course/list")
     // 获取学期
-    //CourseTermListResponse GetTermList(1: CourseTermListRequest req)(api.get="/api/v1/course/term/list")
+    CourseTermListResponse GetTermList(1: CourseTermListRequest req)(api.get="/api/v1/course/term/list")
+    // 校历信息：学期列表
+    TermListResponse GetTermsList(1: TermListRequest req) (api.get="/api/v1/terms/list")
+    // 校历信息：学期详情
+    TermResponse GetTerm(1: TermRequest req) (api.get="/api/v1/terms/info")
 }
