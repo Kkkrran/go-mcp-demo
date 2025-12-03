@@ -150,7 +150,13 @@ func SummarizeConversation(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	result, err := application.NewHost(ctx, clientSet).SummarizeConversation(req.ConversationID)
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	result, err := application.NewHost(ctx, clientSet).SummarizeConversation(req.ConversationID, uid)
 	if err != nil {
 		pack.RespError(c, err)
 		return
