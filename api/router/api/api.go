@@ -27,6 +27,7 @@ func Register(r *server.Hertz) {
 			_v1.POST("/template", append(_templateMw(), api.Template)...)
 			{
 				_conversation := _v1.Group("/conversation", _conversationMw()...)
+				_conversation.DELETE("/delete", append(_deleteconversationMw(), api.DeleteConversation)...)
 				_conversation.GET("/history", append(_getconversationhistoryMw(), api.GetConversationHistory)...)
 				_conversation.GET("/list", append(_listconversationsMw(), api.ListConversations)...)
 				_conversation.POST("/summarize", append(_summarizeconversationMw(), api.SummarizeConversation)...)

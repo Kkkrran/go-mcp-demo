@@ -27,6 +27,8 @@ type TemplateRepository interface {
 	GetConversationByID(ctx context.Context, id string) (*model.Conversations, error)
 	// ListConversationsByUserID 获取用户的所有对话列表
 	ListConversationsByUserID(ctx context.Context, userID string) ([]*model.Conversations, error)
+	// DeleteConversation 删除会话
+	DeleteConversation(ctx context.Context, id string) error
 
 	// CreateTodo 创建待办事项
 	CreateTodo(ctx context.Context, todo *model.Todolists) error

@@ -45,16 +45,16 @@ func _templateMw() []app.HandlerFunc {
 }
 
 func _conversationMw() []app.HandlerFunc {
-	// your code...
 	return []app.HandlerFunc{
 		mw.Auth(),
+		mw.GetHeaderParams(),
 	}
 }
 
 func _summarizeconversationMw() []app.HandlerFunc {
-	// your code...
 	return []app.HandlerFunc{
 		mw.Auth(),
+		mw.GetHeaderParams(),
 	}
 }
 
@@ -177,8 +177,10 @@ func _listconversationsMw() []app.HandlerFunc {
 }
 
 func _updateusersettingMw() []app.HandlerFunc {
-	// your code...
-	return nil
+	return []app.HandlerFunc{
+		mw.Auth(),
+		mw.GetHeaderParams(),
+	}
 }
 
 func _termsMw() []app.HandlerFunc {
@@ -194,4 +196,11 @@ func _gettermMw() []app.HandlerFunc {
 func _gettermslistMw() []app.HandlerFunc {
 	// your code...
 	return nil
+}
+
+func _deleteconversationMw() []app.HandlerFunc {
+	return []app.HandlerFunc{
+		mw.GetHeaderParams(),
+		mw.Auth(),
+	}
 }

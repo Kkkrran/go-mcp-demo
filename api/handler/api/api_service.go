@@ -653,3 +653,26 @@ func GetTerm(ctx context.Context, c *app.RequestContext) {
 
 	pack.RespData(c, termEvents)
 }
+
+// DeleteConversation .
+// @router /api/v1/conversation/delete [DELETE]
+func DeleteConversation(ctx context.Context, c *app.RequestContext) {
+    var err error
+    var req api.DeleteConversationRequest
+    err = c.BindAndValidate(&req)
+    if err != nil {
+        c.String(consts.StatusBadRequest, err.Error())
+        return
+    }
+
+    err = application.NewHost(ctx, clientSet).DeleteConversationLogic(req.ConversationID)
+    if err != nil {
+        pack.RespError(c, err)
+        return
+    }
+
+    resp := &api.DeleteConversationResponse{
+        ConversationID: req.ConversationID,
+    }
+    pack.RespData(c, resp)
+}
