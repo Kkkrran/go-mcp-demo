@@ -227,3 +227,15 @@ func (h *Host) DeleteSummaryLogic(id string) error {
 
 	return h.templateRepository.DeleteSummary(h.ctx, id)
 }
+
+// DeleteConversationLogic 删除会话
+func (h *Host) DeleteConversationLogic(id string) error {
+    conversation, err := h.templateRepository.GetConversationByID(h.ctx, id)
+    if err != nil {
+        return err
+    }
+    if conversation == nil {
+        return errno.NewErrNo(errno.BizNotExist, "会话不存在")
+    }
+    return h.templateRepository.DeleteConversation(h.ctx, id)
+}

@@ -912,6 +912,32 @@ struct TermResponse {
     }')
 }
 
+struct DeleteConversationRequest {
+    1: string conversation_id(api.body="conversation_id", openapi.property='{
+        title: "对话ID",
+        description: "要删除的对话UUID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "删除会话请求",
+        description: "根据UUID删除指定会话",
+        required: ["conversation_id"]
+    }'
+)
+
+struct DeleteConversationResponse {
+    1: string conversation_id(api.body="conversation_id", openapi.property='{
+        title: "已删除会话ID",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "删除会话响应",
+        description: "返回已删除的会话ID",
+        required: ["conversation_id"]
+    }'
+)
 
 service ApiService {
     // 非流式对话
@@ -922,6 +948,8 @@ service ApiService {
     TemplateResponse Template(1: TemplateRequest req)(api.post="/api/v1/template")
     // 获取会话历史
     GetConversationHistoryResponse GetConversationHistory(1: GetConversationHistoryRequest req)(api.get="/api/v1/conversation/history")
+    // 删除会话
+    DeleteConversationResponse DeleteConversation(1: DeleteConversationRequest req)(api.delete="/api/v1/conversation/delete")
     // 获取对话列表
     ListConversationsResponse ListConversations(1: ListConversationsRequest req)(api.get="/api/v1/conversation/list")
     // 会话总结

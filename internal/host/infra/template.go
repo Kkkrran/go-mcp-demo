@@ -431,3 +431,12 @@ func (r *TemplateRepository) DeleteSummary(ctx context.Context, id string) error
 
 	return err
 }
+
+// DeleteConversation 删除会话（软删除）
+func (r *TemplateRepository) DeleteConversation(ctx context.Context, id string) error {
+    d := r.db.Get(ctx)
+    _, err := d.WithContext(ctx).Conversations.
+        Where(d.Conversations.ID.Eq(id)).
+        Delete()
+    return err
+}
