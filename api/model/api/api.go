@@ -2163,10 +2163,11 @@ func (p *SummarizeConversationRequest) String() string {
 }
 
 type SummarizeConversationResponse struct {
-	Summary       string            `thrift:"summary,1" form:"summary" json:"summary"`
-	Tags          []string          `thrift:"tags,2,default,list<string>" form:"tags" json:"tags"`
-	ToolCallsJSON string            `thrift:"tool_calls_json,3" form:"tool_calls_json" json:"tool_calls_json"`
-	Notes         map[string]string `thrift:"notes,4" form:"notes" json:"notes"`
+	SumID         string            `thrift:"sum_id,1" form:"sum_id" json:"sum_id"`
+	Summary       string            `thrift:"summary,2" form:"summary" json:"summary"`
+	Tags          []string          `thrift:"tags,3,default,list<string>" form:"tags" json:"tags"`
+	ToolCallsJSON string            `thrift:"tool_calls_json,4" form:"tool_calls_json" json:"tool_calls_json"`
+	Notes         map[string]string `thrift:"notes,5" form:"notes" json:"notes"`
 }
 
 func NewSummarizeConversationResponse() *SummarizeConversationResponse {
@@ -2174,6 +2175,10 @@ func NewSummarizeConversationResponse() *SummarizeConversationResponse {
 }
 
 func (p *SummarizeConversationResponse) InitDefault() {
+}
+
+func (p *SummarizeConversationResponse) GetSumID() (v string) {
+	return p.SumID
 }
 
 func (p *SummarizeConversationResponse) GetSummary() (v string) {
@@ -2193,10 +2198,11 @@ func (p *SummarizeConversationResponse) GetNotes() (v map[string]string) {
 }
 
 var fieldIDToName_SummarizeConversationResponse = map[int16]string{
-	1: "summary",
-	2: "tags",
-	3: "tool_calls_json",
-	4: "notes",
+	1: "sum_id",
+	2: "summary",
+	3: "tags",
+	4: "tool_calls_json",
+	5: "notes",
 }
 
 func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error) {
@@ -2227,7 +2233,7 @@ func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error)
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2235,7 +2241,7 @@ func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error)
 				goto SkipFieldError
 			}
 		case 3:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -2243,8 +2249,16 @@ func (p *SummarizeConversationResponse) Read(iprot thrift.TProtocol) (err error)
 				goto SkipFieldError
 			}
 		case 4:
-			if fieldTypeId == thrift.MAP {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.MAP {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2287,10 +2301,21 @@ func (p *SummarizeConversationResponse) ReadField1(iprot thrift.TProtocol) error
 	} else {
 		_field = v
 	}
-	p.Summary = _field
+	p.SumID = _field
 	return nil
 }
 func (p *SummarizeConversationResponse) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Summary = _field
+	return nil
+}
+func (p *SummarizeConversationResponse) ReadField3(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
 		return err
@@ -2313,7 +2338,7 @@ func (p *SummarizeConversationResponse) ReadField2(iprot thrift.TProtocol) error
 	p.Tags = _field
 	return nil
 }
-func (p *SummarizeConversationResponse) ReadField3(iprot thrift.TProtocol) error {
+func (p *SummarizeConversationResponse) ReadField4(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -2324,7 +2349,7 @@ func (p *SummarizeConversationResponse) ReadField3(iprot thrift.TProtocol) error
 	p.ToolCallsJSON = _field
 	return nil
 }
-func (p *SummarizeConversationResponse) ReadField4(iprot thrift.TProtocol) error {
+func (p *SummarizeConversationResponse) ReadField5(iprot thrift.TProtocol) error {
 	_, _, size, err := iprot.ReadMapBegin()
 	if err != nil {
 		return err
@@ -2376,6 +2401,10 @@ func (p *SummarizeConversationResponse) Write(oprot thrift.TProtocol) (err error
 			fieldId = 4
 			goto WriteFieldError
 		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -2395,10 +2424,10 @@ WriteStructEndError:
 }
 
 func (p *SummarizeConversationResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("summary", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("sum_id", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Summary); err != nil {
+	if err := oprot.WriteString(p.SumID); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2412,7 +2441,24 @@ WriteFieldEndError:
 }
 
 func (p *SummarizeConversationResponse) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("tags", thrift.LIST, 2); err != nil {
+	if err = oprot.WriteFieldBegin("summary", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Summary); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *SummarizeConversationResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("tags", thrift.LIST, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.STRING, len(p.Tags)); err != nil {
@@ -2431,13 +2477,13 @@ func (p *SummarizeConversationResponse) writeField2(oprot thrift.TProtocol) (err
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
-func (p *SummarizeConversationResponse) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("tool_calls_json", thrift.STRING, 3); err != nil {
+func (p *SummarizeConversationResponse) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("tool_calls_json", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteString(p.ToolCallsJSON); err != nil {
@@ -2448,13 +2494,13 @@ func (p *SummarizeConversationResponse) writeField3(oprot thrift.TProtocol) (err
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
-func (p *SummarizeConversationResponse) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("notes", thrift.MAP, 4); err != nil {
+func (p *SummarizeConversationResponse) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("notes", thrift.MAP, 5); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRING, len(p.Notes)); err != nil {
@@ -2476,9 +2522,9 @@ func (p *SummarizeConversationResponse) writeField4(oprot thrift.TProtocol) (err
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *SummarizeConversationResponse) String() string {

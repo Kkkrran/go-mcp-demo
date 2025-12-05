@@ -163,6 +163,7 @@ func SummarizeConversation(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := &api.SummarizeConversationResponse{
+		SumID:         result.SumID,
 		Summary:       result.Summary,
 		Tags:          result.Tags,
 		ToolCallsJSON: result.ToolCallsJSON, // 统一字段名
@@ -657,22 +658,22 @@ func GetTerm(ctx context.Context, c *app.RequestContext) {
 // DeleteConversation .
 // @router /api/v1/conversation/delete [DELETE]
 func DeleteConversation(ctx context.Context, c *app.RequestContext) {
-    var err error
-    var req api.DeleteConversationRequest
-    err = c.BindAndValidate(&req)
-    if err != nil {
-        c.String(consts.StatusBadRequest, err.Error())
-        return
-    }
+	var err error
+	var req api.DeleteConversationRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
 
-    err = application.NewHost(ctx, clientSet).DeleteConversationLogic(req.ConversationID)
-    if err != nil {
-        pack.RespError(c, err)
-        return
-    }
+	err = application.NewHost(ctx, clientSet).DeleteConversationLogic(req.ConversationID)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
 
-    resp := &api.DeleteConversationResponse{
-        ConversationID: req.ConversationID,
-    }
-    pack.RespData(c, resp)
+	resp := &api.DeleteConversationResponse{
+		ConversationID: req.ConversationID,
+	}
+	pack.RespData(c, resp)
 }

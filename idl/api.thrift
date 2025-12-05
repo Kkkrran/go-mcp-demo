@@ -209,22 +209,27 @@ struct SummarizeConversationRequest{
 )
 
 struct SummarizeConversationResponse{
-    1: string summary(api.body="summary", openapi.property='{
+    1: string sum_id(api.body="sum_id", openapi.property='{
+        title: "总结id",
+        description: "总结自己的id",
+        type: "string"
+    }')
+    2: string summary(api.body="summary", openapi.property='{
         title: "会话总结",
         description: "会话内容的总结",
         type: "string"
     }')
-    2: list<string> tags(api.body="tags", openapi.property='{
+    3: list<string> tags(api.body="tags", openapi.property='{
         title: "标签列表",
         description: "会话相关的标签",
         type: "array"
     }')
-    3: string tool_calls_json(api.body="tool_calls_json", openapi.property='{
+    4: string tool_calls_json(api.body="tool_calls_json", openapi.property='{
         title: "工具调用JSON",
         description: "工具调用的JSON字符串",
         type: "string"
     }')
-    4: map<string,string> notes(api.body="notes", openapi.property='{
+    5: map<string,string> notes(api.body="notes", openapi.property='{
         title: "笔记",
         description: "AI 或用户针对总结写的任意键值笔记，包含文件路径等信息",
         type: "object"
@@ -232,8 +237,8 @@ struct SummarizeConversationResponse{
 }(
     openapi.schema='{
         title: "总结会话响应",
-        description: "包含会话总结、标签、工具调用和笔记的响应",
-        required: ["summary", "tags", "tool_calls_json", "notes"]
+        description: "包含会话总结id、总结内容、标签、工具调用和笔记的响应",
+        required: ["sum_id"， "summary", "tags", "tool_calls_json", "notes"]
     }'
 )
 
