@@ -149,14 +149,18 @@ func SummarizeConversation(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-
+	if req.SumID == "" {
+        c.String(consts.StatusBadRequest, "sum_id is required")
+        return
+    }
 	uid, ok := utils.ExtractStuID(ctx)
 	if !ok {
 		pack.RespError(c, errno.AuthInvalid)
 		return
 	}
 
-	result, err := application.NewHost(ctx, clientSet).SummarizeConversation(req.ConversationID, uid)
+	result, err := application.NewHost(ctx, clientSet).SummarizeConversation(req.ConversationID, uid, req.SumID)
+	
 	if err != nil {
 		pack.RespError(c, err)
 		return

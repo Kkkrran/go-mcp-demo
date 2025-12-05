@@ -200,11 +200,16 @@ struct SummarizeConversationRequest{
         description: "需要总结的会话ID",
         type: "string"
     }')
+     2: string sum_id(api.body="sum_id", openapi.property='{
+        title: "摘要ID",
+        description: "客户端自定义的摘要ID，留空时由后端自动生成",
+        type: "string"
+    }')
 }(
     openapi.schema='{
         title: "总结会话请求",
         description: "请求总结指定会话的内容",
-        required: ["conversation_id"]
+        required: ["conversation_id", "sum_id"]
     }'
 )
 

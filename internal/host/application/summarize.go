@@ -314,7 +314,7 @@ func sanitizeJSONBlock(raw string) string {
 }
 
 // 在 persistConversationSummary 中直接使用 payload.NotesRaw 透传给 DB（jsonb）
-func (h *Host) persistConversationSummary(ctx context.Context, conversationID string, payload *conversationSummaryPayload) (string, error) {
+func (h *Host) persistConversationSummary(ctx context.Context, conversationID string, payload *conversationSummaryPayload, preferredSummaryID string) (string, error) {
 	logger.Infof("persistConversationSummary conversation_id=%s summary_len=%d related_summary_id=%s",
 		conversationID, len(payload.Summary), payload.RelatedSummaryID)
 	logger.Debugf("notes jsonb=%s", string(payload.NotesRaw))
@@ -325,7 +325,43 @@ func (h *Host) persistConversationSummary(ctx context.Context, conversationID st
 		return "", fmt.Errorf("marshal tags failed: %w", err)
 	}
 
-	// 如果AI识别到相关的summary，则更新它
+	createSummary := func(forcedID string) (string, error) {
+		summary := &model.Summaries{
+			ConversationID: conversationID,
+			SummaryText:    payload.Summary,
+			Tags:           string(tagsJSON),
+			ToolCalls:      string(payload.ToolCalls),
+			Notes:          string(payload.NotesRaw),
+		}
+		if forcedID != "" {
+			summary.ID = forcedID
+		}
+		if err := h.templateRepository.CreateSummary(ctx, summary); err != nil {
+			return "", err
+		}
+		return summary.ID, nil
+	}
+
+	if preferredSummaryID != "" {
+		logger.Infof("preferred summary id provided: %s", preferredSummaryID)
+		existingSummary, err := h.templateRepository.GetSummaryByID(ctx, preferredSummaryID)
+		if err != nil {
+			return "", fmt.Errorf("get preferred summary failed: %w", err)
+		}
+		if existingSummary != nil {
+			existingSummary.SummaryText = payload.Summary
+			existingSummary.Tags = string(tagsJSON)
+			existingSummary.ToolCalls = string(payload.ToolCalls)
+			existingSummary.Notes = string(payload.NotesRaw)
+			existingSummary.ConversationID = conversationID
+			if err := h.templateRepository.UpdateSummary(ctx, existingSummary); err != nil {
+				return "", err
+			}
+			return existingSummary.ID, nil
+		}
+		return createSummary(preferredSummaryID)
+	}
+
 	if payload.RelatedSummaryID != "" && payload.RelatedSummaryID != "null" {
 		logger.Infof("检测到相关summary，将更新: %s", payload.RelatedSummaryID)
 
@@ -352,25 +388,12 @@ func (h *Host) persistConversationSummary(ctx context.Context, conversationID st
 		}
 	}
 
-	// 创建新摘要记录
-	summary := &model.Summaries{
-		ConversationID: conversationID,
-		SummaryText:    payload.Summary,
-		Tags:           string(tagsJSON),
-		ToolCalls:      string(payload.ToolCalls),
-		Notes:          string(payload.NotesRaw),
-	}
-
-	if err := h.templateRepository.CreateSummary(ctx, summary); err != nil {
-		return "", err
-	}
-
-	return summary.ID, nil
+	return createSummary("")
 }
 
 // summarizeConversation 承载实际的总结流程，由 Host.SummarizeConversation 调用。
 // summarizeConversation 返回 SummarizeResult 时直接返回 NotesJSON
-func (h *Host) summarizeConversation(conversationID string, userID string) (*SummarizeResult, error) {
+func (h *Host) summarizeConversation(conversationID string, userID string, preferredSummaryID string) (*SummarizeResult, error) {
 	logger.Infof("SummarizeConversation start conversation_id=%s user_id=%s", conversationID, userID)
 
 	prompt, err := h.buildSummarizePrompt(h.ctx, conversationID, userID)
@@ -389,7 +412,7 @@ func (h *Host) summarizeConversation(conversationID string, userID string) (*Sum
 		return nil, err
 	}
 
-	sumID, err := h.persistConversationSummary(h.ctx, conversationID, payload)
+	sumID, err := h.persistConversationSummary(h.ctx, conversationID, payload, preferredSummaryID)
 	if err != nil {
 		return nil, err
 	}
