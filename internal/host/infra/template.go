@@ -80,6 +80,22 @@ func (r *TemplateRepository) SetCoursesCache(ctx context.Context, key string, co
 	return nil
 }
 
+func (r *TemplateRepository) GetDailyScheduleCache(ctx context.Context, key string) (string, error) {
+	data, err := r.cache.Get(ctx, key).Result()
+	if err != nil {
+		return "", fmt.Errorf("dal.GetDailyScheduleCache: cache failed: %w", err)
+	}
+	return data, nil
+}
+
+func (r *TemplateRepository) SetDailyScheduleCache(ctx context.Context, key string, schedule string) error {
+	if err := r.cache.Set(ctx, key, schedule, constant.DailyScheduleExpire).Err(); err != nil {
+		logger.Errorf("dal.SetDailyScheduleCache: Set key failed: %v", err)
+		return err
+	}
+	return nil
+}
+
 func NewTemplateRepository(db *db.DB[*query.Query], cache *redis.Client) *TemplateRepository {
 	return &TemplateRepository{db: db, cache: cache}
 }

@@ -677,3 +677,32 @@ func DeleteConversation(ctx context.Context, c *app.RequestContext) {
 	}
 	pack.RespData(c, resp)
 }
+
+// DailySchedule .
+// @router /api/v1/schedule/daily [GET]
+func DailySchedule(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req api.DailyScheduleRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	uid, ok := utils.ExtractStuID(ctx)
+	if !ok {
+		pack.RespError(c, errno.AuthInvalid)
+		return
+	}
+
+	schedule, err := application.NewHost(ctx, clientSet).GetDailySchedule(uid)
+	if err != nil {
+		pack.RespError(c, err)
+		return
+	}
+
+	resp := &api.DailyScheduleResponse{
+		Schedule: schedule,
+	}
+	pack.RespData(c, resp)
+}

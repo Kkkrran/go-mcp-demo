@@ -75,4 +75,8 @@ type TemplateRepository interface {
 	SetCoursesCache(ctx context.Context, key string, course []*jwch.Course) error
 	// SetTermsCache 设置学期列表缓存
 	SetTermsCache(ctx context.Context, key string, info []string) error
+	// GetDailyScheduleCache 获取每日日程缓存
+	GetDailyScheduleCache(ctx context.Context, key string) (string, error)
+	// SetDailyScheduleCache 设置每日日程缓存
+	SetDailyScheduleCache(ctx context.Context, key string, schedule string) error
 }

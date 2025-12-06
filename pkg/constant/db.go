@@ -13,4 +13,5 @@ const (
 const (
 	CourseTermsKeyExpire = 3 * ONE_DAY // [course] 学期列表
 	TermInfoKeyExpire    = 7 * ONE_DAY // [common] 学期详细信息
+	DailyScheduleExpire  = 1 * ONE_DAY // [schedule] 每日日程缓存
 )

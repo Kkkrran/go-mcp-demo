@@ -1,17 +1,20 @@
 package base
 
 import (
+	"sync"
+
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/ai_provider"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/mcp_client"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/registry"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"sync"
 )
 
 var (
-	instance *ClientSet
-	once     sync.Once
+	instance       *ClientSet
+	globalInstance *ClientSet
+	once           sync.Once
+	globalMutex    sync.RWMutex
 )
 
 // ClientSet storage various client objects
@@ -43,4 +46,18 @@ func (cs *ClientSet) Close() {
 	for _, cleanup := range cs.cleanups {
 		cleanup()
 	}
+}
+
+// SetGlobalClientSet 设置全局 ClientSet 实例（用于 MCP 服务等场景）
+func SetGlobalClientSet(cs *ClientSet) {
+	globalMutex.Lock()
+	defer globalMutex.Unlock()
+	globalInstance = cs
+}
+
+// GetGlobalClientSet 获取全局 ClientSet 实例
+func GetGlobalClientSet() *ClientSet {
+	globalMutex.RLock()
+	defer globalMutex.RUnlock()
+	return globalInstance
 }

@@ -944,6 +944,28 @@ struct DeleteConversationResponse {
     }'
 )
 
+struct DailyScheduleRequest {
+}(
+    openapi.schema='{
+        title: "每日日程请求",
+        description: "获取今日的待办事项和课表安排"
+    }'
+)
+
+struct DailyScheduleResponse {
+    1: string schedule(api.body="schedule", openapi.property='{
+        title: "今日安排",
+        description: "AI生成的今日安排摘要",
+        type: "string"
+    }')
+}(
+    openapi.schema='{
+        title: "每日日程响应",
+        description: "返回今日的待办和课表安排",
+        required: ["schedule"]
+    }'
+)
+
 service ApiService {
     // 非流式对话
     ChatResponse Chat(1: ChatRequest req)(api.post="/api/v1/chat")
@@ -999,4 +1021,6 @@ service ApiService {
     TermListResponse GetTermsList(1: TermListRequest req) (api.get="/api/v1/terms/list")
     // 校历信息：学期详情
     TermResponse GetTerm(1: TermRequest req) (api.get="/api/v1/terms/info")
+    // 每日日程
+    DailyScheduleResponse DailySchedule(1: DailyScheduleRequest req) (api.get="/api/v1/schedule/daily")
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/FantasyRL/go-mcp-demo/config"
 	"github.com/FantasyRL/go-mcp-demo/internal/mcp"
 	"github.com/FantasyRL/go-mcp-demo/internal/mcp/application"
@@ -29,6 +30,8 @@ func init() {
 		//application.WithDevRunnerTools(),
 		application.WithAIScienceAndEngineeringBuildHtmlTool(),
 		application.WithWebSearchTool(),
+		application.WithTodoTools(),
+		application.WithCourseTools(),
 	)
 	promptSet = prompt_set.NewPromptSet()
 }

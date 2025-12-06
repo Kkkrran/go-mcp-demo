@@ -65,6 +65,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ChatSSEHandlerResponseBody'
+    /api/v1/conversation/delete:
+        delete:
+            tags:
+                - ApiService
+            description: 删除会话
+            operationId: ApiService_DeleteConversation
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteConversationResponseBody'
     /api/v1/conversation/history:
         get:
             tags:
@@ -157,6 +170,19 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CourseTermListResponseBody'
+    /api/v1/schedule/daily:
+        get:
+            tags:
+                - ApiService
+            description: 每日日程
+            operationId: ApiService_DailySchedule
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DailyScheduleResponseBody'
     /api/v1/summary/delete:
         delete:
             tags:
@@ -455,24 +481,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UpdateUserSettingResponseBody'
-    /api/v1/conversation/delete:
-        delete:
-            tags:
-                - ApiService
-            description: 删除会话
-            operationId: ApiService_DeleteConversation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/DeleteConversationRequestBody'
-            responses:
-                "200":
-                    description: Successful response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/DeleteConversationResponseBody'
 components:
     schemas:
         BaseResp:
@@ -748,6 +756,27 @@ components:
                     type: string
                     description: 创建成功的待办事项ID
             description: 返回创建成功的待办事项ID
+        DailyScheduleResponseBody:
+            title: 每日日程响应
+            required:
+                - schedule
+            type: object
+            properties:
+                schedule:
+                    title: 今日安排
+                    type: string
+                    description: AI生成的今日安排摘要
+            description: 返回今日的待办和课表安排
+        DeleteConversationResponseBody:
+            title: 删除会话响应
+            required:
+                - conversation_id
+            type: object
+            properties:
+                conversation_id:
+                    title: 已删除会话ID
+                    type: string
+            description: 返回已删除的会话ID
         DeleteSummaryResponseBody:
             title: 删除摘要响应
             required:
@@ -917,12 +946,15 @@ components:
         SummarizeConversationResponseBody:
             title: 总结会话响应
             required:
-                - summary
                 - tags
                 - tool_calls_json
                 - notes
             type: object
             properties:
+                sum_id:
+                    title: 总结id
+                    type: string
+                    description: 总结自己的id
                 summary:
                     title: 会话总结
                     type: string
@@ -943,7 +975,7 @@ components:
                     additionalProperties:
                         type: string
                     description: AI 或用户针对总结写的任意键值笔记，包含文件路径等信息
-            description: 包含会话总结、标签、工具调用和笔记的响应
+            description: 包含会话总结id、总结内容、标签、工具调用和笔记的响应
         SummaryItem:
             title: 摘要详细信息
             type: object
@@ -1267,25 +1299,5 @@ components:
                     type: string
                     description: 用户的显示名称
             description: 包含用户基本信息的结构
-        DeleteConversationRequestBody:
-            title: 删除会话请求
-            required:
-                - conversation_id
-            type: object
-            properties:
-                conversation_id:
-                    title: 对话ID
-                    type: string
-                    description: 要删除的会话 UUID
-        DeleteConversationResponseBody:
-            title: 删除会话响应
-            required:
-                - conversation_id
-            type: object
-            properties:
-                conversation_id:
-                    title: 已删除会话ID
-                    type: string
-                    description: 返回的会话 UUID
 tags:
     - name: ApiService

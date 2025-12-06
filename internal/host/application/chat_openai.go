@@ -180,7 +180,18 @@ func (h *Host) StreamChatOpenAI(
 	}
 
 	// 工具（OpenAI 版）
-	tools := h.mcpCli.ConvertToolsToOpenAI()
+	allTools := h.mcpCli.ConvertToolsToOpenAI()
+	// 屏蔽内部工具：get_todos 和 get_course（这些工具仅供专用接口使用）
+	tools := make([]openai.ChatCompletionToolUnionParam, 0, len(allTools))
+	for _, tool := range allTools {
+		if tool.OfFunction != nil {
+			name := tool.OfFunction.Function.Name
+			if name == "get_todos" || name == "get_course" {
+				continue
+			}
+		}
+		tools = append(tools, tool)
+	}
 
 	round := 0
 	for {
@@ -400,7 +411,18 @@ func (h *Host) ChatOpenAI(
 	// 工具（OpenAI 版）- 如果有图片则不使用工具（vision模型可能不支持）
 	var tools []openai.ChatCompletionToolUnionParam
 	if len(imageData) == 0 {
-		tools = h.mcpCli.ConvertToolsToOpenAI()
+		allTools := h.mcpCli.ConvertToolsToOpenAI()
+		// 屏蔽内部工具：get_todos 和 get_course（这些工具仅供专用接口使用）
+		tools = make([]openai.ChatCompletionToolUnionParam, 0, len(allTools))
+		for _, tool := range allTools {
+			if tool.OfFunction != nil {
+				name := tool.OfFunction.Function.Name
+				if name == "get_todos" || name == "get_course" {
+					continue
+				}
+			}
+			tools = append(tools, tool)
+		}
 	}
 
 	round := 0

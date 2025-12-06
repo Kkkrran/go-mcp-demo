@@ -204,3 +204,13 @@ func _deleteconversationMw() []app.HandlerFunc {
 		mw.Auth(),
 	}
 }
+
+func _scheduleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _dailyscheduleMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

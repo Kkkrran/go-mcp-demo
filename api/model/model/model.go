@@ -380,7 +380,7 @@ func (p *User) String() string {
 }
 
 /*
-   以下代码来自fzuhelper-server
+	以下代码来自fzuhelper-server
 */
 type Course struct {
 	// 课程名称

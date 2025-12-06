@@ -41,6 +41,10 @@ func Register(r *server.Hertz) {
 				}
 			}
 			{
+				_schedule := _v1.Group("/schedule", _scheduleMw()...)
+				_schedule.GET("/daily", append(_dailyscheduleMw(), api.DailySchedule)...)
+			}
+			{
 				_summary := _v1.Group("/summary", _summaryMw()...)
 				_summary.DELETE("/delete", append(_deletesummaryMw(), api.DeleteSummary)...)
 				_summary.GET("/detail", append(_getsummaryMw(), api.GetSummary)...)
