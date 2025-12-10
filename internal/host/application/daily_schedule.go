@@ -14,13 +14,14 @@ import (
 const dailySchedulePrompt = `你是一个智能日程助手，需要根据用户的课表和待办事项，生成今日的完整日程安排。
 
 ## 任务说明
-1. 调用 get_course 工具获取用户的课表信息（使用当前学期代码 202501）
+1. 调用 get_course_local 工具获取用户的课表信息
 2. 调用 get_todos 工具获取用户的待办事项列表
 3. 分析今天是星期几，筛选出今天的课程
 4. 结合课程和待办事项，生成一份清晰的今日安排
 
 ## 学期代码规则
-- 当前是 2025年12月，当前学期是 202501（2025年秋季学期）
+- 当前是 2025年12月，所以当前学期是 202501（2025年秋季学期）
+- 2026年3月则是202502,2026年9月则是202601
 - 学期代码格式：YYYYSS，01表示秋季学期，02表示春季学期
 
 ## 课程节次与时间对应关系
@@ -190,11 +191,11 @@ func (h *Host) generateDailySchedule(userID string) (string, error) {
 			}
 
 			// 特殊处理：自动注入 user_id
-			if name == "get_todos" || name == "get_course" {
+			if name == "get_todos" || name == "get_course_local" {
 				args["user_id"] = userID
 			}
 			// 特殊处理：get_course 需要 term 参数
-			if name == "get_course" {
+			if name == "get_course_local" {
 				if _, ok := args["term"]; !ok {
 					args["term"] = "202501" // 默认当前学期
 				}
@@ -206,7 +207,8 @@ func (h *Host) generateDailySchedule(userID string) (string, error) {
 			out, callErr := h.mcpCli.CallTool(ctx, name, args)
 			if callErr != nil {
 				out = fmt.Sprintf("tool error: %v", callErr)
-				logger.Errorf("DailySchedule: tool %s error: %v", name, callErr)
+				return "", fmt.Errorf("调用工具 %s 失败: %w", name, callErr)
+
 			}
 
 			// 工具结果回模型

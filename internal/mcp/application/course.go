@@ -7,6 +7,7 @@ import (
 
 	"github.com/FantasyRL/go-mcp-demo/pkg/base"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
+	"github.com/bytedance/sonic"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/west2-online/jwch"
 )
@@ -15,7 +16,7 @@ import (
 func WithCourseTools() tool_set.Option {
 	return func(ts *tool_set.ToolSet) {
 		tool := mcp.NewTool(
-			"get_course",
+			"get_course_local",
 			mcp.WithDescription("从Redis缓存获取指定用户的课表信息"),
 			mcp.WithString("user_id", mcp.Required(), mcp.Description("用户ID")),
 			mcp.WithString("term", mcp.Required(), mcp.Description("学期代码，如 202501")),
@@ -59,9 +60,9 @@ func WithCourseTools() tool_set.Option {
 				return mcp.NewToolResultError(fmt.Sprintf("Failed to get course from cache: %v", err)), nil
 			}
 
-			// 反序列化课表数据
+			// 反序列化课表数据（使用 sonic 与存储时保持一致）
 			var courses []*jwch.Course
-			if err := json.Unmarshal(data, &courses); err != nil {
+			if err := sonic.Unmarshal(data, &courses); err != nil {
 				return mcp.NewToolResultError(fmt.Sprintf("Failed to unmarshal course data: %v", err)), nil
 			}
 

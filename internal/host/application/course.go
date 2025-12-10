@@ -98,7 +98,7 @@ func (h *Host) GetCourseList(req *api.CourseListRequest) ([]*model.Course, error
 	if err != nil {
 		return nil, fmt.Errorf("service.GetCourseList: Set courses cache fail: %w", err)
 	}
-	err = h.templateRepository.SetTermsCache(h.ctx, courseKey, terms.Terms)
+	err = h.templateRepository.SetTermsCache(h.ctx, termKey, terms.Terms)
 	if err != nil {
 		return nil, fmt.Errorf("service.GetCourseList: Set terms cache fail: %w", err)
 	}
