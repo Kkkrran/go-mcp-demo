@@ -945,6 +945,11 @@ struct DeleteConversationResponse {
 )
 
 struct DailyScheduleRequest {
+    1: optional bool is_refresh(api.query="is_refresh", openapi.property='{
+        title: "是否刷新",
+        description: "是否强制刷新，true时不使用缓存",
+        type: "boolean"
+    }')
 }(
     openapi.schema='{
         title: "每日日程请求",

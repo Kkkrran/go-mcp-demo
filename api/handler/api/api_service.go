@@ -695,7 +695,7 @@ func DailySchedule(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	schedule, err := application.NewHost(ctx, clientSet).GetDailySchedule(uid)
+	schedule, err := application.NewHost(ctx, clientSet).GetDailySchedule(uid, req.IsRefresh)
 	if err != nil {
 		pack.RespError(c, err)
 		return

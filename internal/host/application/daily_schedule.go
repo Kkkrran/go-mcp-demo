@@ -62,26 +62,30 @@ const dailySchedulePrompt = `你是一个智能日程助手，需要根据用户
 `
 
 // GetDailySchedule 获取每日日程安排（带Redis缓存）
-func (h *Host) GetDailySchedule(userID string) (string, error) {
-	// 1. 检查 Redis 缓存
+func (h *Host) GetDailySchedule(userID string, isRefresh *bool) (string, error) {
+	// 1. 检查是否强制刷新
+	needRefresh := false
+	if isRefresh != nil {
+		needRefresh = *isRefresh
+	}
+
+	// 2. 如果不需要刷新，检查 Redis 缓存
 	cacheKey := fmt.Sprintf("daily_schedule:%s", userID)
 
-	if h.templateRepository.IsKeyExist(h.ctx, cacheKey) {
+	if !needRefresh && h.templateRepository.IsKeyExist(h.ctx, cacheKey) {
 		cached, err := h.templateRepository.GetDailyScheduleCache(h.ctx, cacheKey)
 		if err == nil && cached != "" {
 			logger.Infof("GetDailySchedule: cache hit for user %s", userID)
 			return cached, nil
 		}
 		logger.Warnf("GetDailySchedule: cache read failed: %v", err)
-	}
-
-	// 2. 缓存不存在，调用 AI 生成
+	} // 3. 缓存不存在或强制刷新，调用 AI 生成
 	schedule, err := h.generateDailySchedule(userID)
 	if err != nil {
 		return "", fmt.Errorf("generate daily schedule failed: %w", err)
 	}
 
-	// 3. 存入 Redis（24小时过期）
+	// 4. 存入 Redis（当天24点过期）
 	if err := h.templateRepository.SetDailyScheduleCache(h.ctx, cacheKey, schedule); err != nil {
 		logger.Errorf("GetDailySchedule: cache write failed: %v", err)
 		// 不影响返回，继续执行
