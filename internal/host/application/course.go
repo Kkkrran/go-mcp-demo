@@ -52,8 +52,12 @@ func (h *Host) GetCourseList(req *api.CourseListRequest) ([]*model.Course, error
 	if !e {
 		return nil, errno.ParamError
 	}
-	termKey := fmt.Sprintf("terms:%s", loginData.ID)
-	courseKey := fmt.Sprintf("course:%s:%s", loginData.ID, req.Term)
+	stuID, e := utils.ExtractStuID(h.ctx)
+	if !e {
+		return nil, errno.ParamError
+	}
+	termKey := fmt.Sprintf("terms:%s", stuID)
+	courseKey := fmt.Sprintf("course:%s:%s", stuID, req.Term)
 	terms := new(jwch.Term)
 	// 学期缓存存在
 	isRefresh := false
