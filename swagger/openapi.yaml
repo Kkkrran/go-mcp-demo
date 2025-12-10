@@ -176,6 +176,13 @@ paths:
                 - ApiService
             description: 每日日程
             operationId: ApiService_DailySchedule
+            parameters:
+                - name: is_refresh
+                  in: query
+                  schema:
+                    title: 是否刷新
+                    type: boolean
+                    description: 是否强制刷新，true时不使用缓存
             responses:
                 "200":
                     description: Successful response

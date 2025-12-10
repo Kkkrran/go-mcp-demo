@@ -10391,6 +10391,7 @@ func (p *DeleteConversationResponse) String() string {
 }
 
 type DailyScheduleRequest struct {
+	IsRefresh *bool `thrift:"is_refresh,1,optional" json:"is_refresh,omitempty" query:"is_refresh"`
 }
 
 func NewDailyScheduleRequest() *DailyScheduleRequest {
@@ -10400,7 +10401,22 @@ func NewDailyScheduleRequest() *DailyScheduleRequest {
 func (p *DailyScheduleRequest) InitDefault() {
 }
 
-var fieldIDToName_DailyScheduleRequest = map[int16]string{}
+var DailyScheduleRequest_IsRefresh_DEFAULT bool
+
+func (p *DailyScheduleRequest) GetIsRefresh() (v bool) {
+	if !p.IsSetIsRefresh() {
+		return DailyScheduleRequest_IsRefresh_DEFAULT
+	}
+	return *p.IsRefresh
+}
+
+var fieldIDToName_DailyScheduleRequest = map[int16]string{
+	1: "is_refresh",
+}
+
+func (p *DailyScheduleRequest) IsSetIsRefresh() bool {
+	return p.IsRefresh != nil
+}
 
 func (p *DailyScheduleRequest) Read(iprot thrift.TProtocol) (err error) {
 
@@ -10419,8 +10435,20 @@ func (p *DailyScheduleRequest) Read(iprot thrift.TProtocol) (err error) {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err = iprot.Skip(fieldTypeId); err != nil {
-			goto SkipFieldTypeError
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		}
 		if err = iprot.ReadFieldEnd(); err != nil {
 			goto ReadFieldEndError
@@ -10435,8 +10463,10 @@ ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-SkipFieldTypeError:
-	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DailyScheduleRequest[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
 ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
@@ -10444,11 +10474,28 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
+func (p *DailyScheduleRequest) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.IsRefresh = _field
+	return nil
+}
+
 func (p *DailyScheduleRequest) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
 	if err = oprot.WriteStructBegin("DailyScheduleRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -10459,10 +10506,31 @@ func (p *DailyScheduleRequest) Write(oprot thrift.TProtocol) (err error) {
 	return nil
 WriteStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
 WriteFieldStopError:
 	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
 WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *DailyScheduleRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.IsSetIsRefresh() {
+		if err = oprot.WriteFieldBegin("is_refresh", thrift.BOOL, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.IsRefresh); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
 func (p *DailyScheduleRequest) String() string {
