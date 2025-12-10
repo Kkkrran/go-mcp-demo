@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/FantasyRL/go-mcp-demo/pkg/constant"
 	"github.com/FantasyRL/go-mcp-demo/pkg/logger"
@@ -89,7 +90,12 @@ func (r *TemplateRepository) GetDailyScheduleCache(ctx context.Context, key stri
 }
 
 func (r *TemplateRepository) SetDailyScheduleCache(ctx context.Context, key string, schedule string) error {
-	if err := r.cache.Set(ctx, key, schedule, constant.DailyScheduleExpire).Err(); err != nil {
+	// 计算到今天24点的剩余时间
+	now := time.Now()
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+	ttl := endOfDay.Sub(now)
+
+	if err := r.cache.Set(ctx, key, schedule, ttl).Err(); err != nil {
 		logger.Errorf("dal.SetDailyScheduleCache: Set key failed: %v", err)
 		return err
 	}
