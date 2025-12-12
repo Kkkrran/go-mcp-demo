@@ -4,24 +4,11 @@ import (
 	"context"
 
 	"github.com/FantasyRL/go-mcp-demo/config"
-	"github.com/FantasyRL/go-mcp-demo/pkg/base/ai_provider"
+	"github.com/FantasyRL/go-mcp-demo/pkg/base"
 	"github.com/FantasyRL/go-mcp-demo/pkg/base/tool_set"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/openai/openai-go/v2"
 )
-
-var instance *AISESolver
-
-type AISESolver struct {
-	aiProviderCli *ai_provider.Client
-}
-
-func NewAISESolver(aiProviderCli *ai_provider.Client) *AISESolver {
-	instance = &AISESolver{
-		aiProviderCli: aiProviderCli,
-	}
-	return instance
-}
 
 func WithAIScienceAndEngineeringBuildHtmlTool() tool_set.Option {
 	return func(toolSet *tool_set.ToolSet) {
@@ -37,11 +24,23 @@ func WithAIScienceAndEngineeringBuildHtmlTool() tool_set.Option {
 
 func AIScienceAndEngineeringBuildHtml(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	args := req.GetArguments()
-	question := args["question"].(string)
-	if question == "" {
+	rawQuestion, ok := args["question"]
+	if !ok {
 		return mcp.NewToolResultError("missing required arg: question"), nil
 	}
-	resp, err := instance.aiProviderCli.ChatOpenAI(ctx, openai.ChatCompletionNewParams{
+
+	question, ok := rawQuestion.(string)
+	if !ok || question == "" {
+		return mcp.NewToolResultError("question must be a non-empty string"), nil
+	}
+
+	// 从 global ClientSet 获取 AI provider
+	clientSet := base.GetGlobalClientSet()
+	if clientSet == nil || clientSet.AiProviderCli == nil {
+		return mcp.NewToolResultError("AI provider not initialized"), nil
+	}
+
+	resp, err := clientSet.AiProviderCli.ChatOpenAI(ctx, openai.ChatCompletionNewParams{
 		Model: openai.ChatModel(config.AiProvider.Model),
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(systemPromptHTMLPrinter),
