@@ -218,6 +218,10 @@ func (h *Host) StreamChatOpenAI(
 			Model:    openai.ChatModel(config.AiProvider.Model),
 			Messages: hist,
 		}
+		if len(imageData) > 0 {
+			params.Model = "qwen3-vl-flash"
+		}
+
 		// 只有在 tools 非空时才传递 Tools 参数，避免阿里云 API 报错
 		if len(tools) > 0 {
 			params.Tools = tools

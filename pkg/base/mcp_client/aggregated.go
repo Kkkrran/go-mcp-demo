@@ -112,6 +112,7 @@ func (a *AggregatedClient) refresh() {
 		}
 		a.clients[u] = cli
 		logger.Infof("mcp connected: %s (tools=%d)", u, len(cli.Tools))
+		fmt.Println(cli.Tools)
 	}
 	// 建立fzu-helper-mcp连接
 	fzuCli, err := NewMCPClient(constant.FzuHelperServerMCPUrl)
