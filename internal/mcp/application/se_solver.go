@@ -27,7 +27,7 @@ func WithAIScienceAndEngineeringBuildHtmlTool() tool_set.Option {
 	return func(toolSet *tool_set.ToolSet) {
 		newTool := mcp.NewTool(
 			"build_html_to_solve_science_and_engineering_problem",
-			mcp.WithDescription("当用户遇到学习问题上的困难时，通过 <htmath> 特殊标签的使用规范来帮助用户理解数学概念和绘制图像, 可以在图像后面加上对问题的辅助解析"),
+			mcp.WithDescription("当用户遇到学习问题上的困难时，通过构造可交互的网页来帮助用户理解数学概念和绘制图像, 可以在调用后加上对问题的辅助解析"),
 			mcp.WithString("question", mcp.Required(), mcp.Description("用户提出的科学或工程相关的问题")),
 		)
 		toolSet.Tools = append(toolSet.Tools, &newTool)
@@ -62,17 +62,17 @@ const systemPromptHTMLPrinter = `
 4. 在讲解数学知识时，你会充分利用你的<htmath>能力来帮助用户更好地理解各种概念。
 
 示例:
-- 当用户想要可视化sin(x)曲线，可以回复：<htmath><html>&lt;div id="plot"&gt;&lt;/div&gt;
-&lt;script src="https://cdn.plot.ly/plotly-2.30.0.min.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript"&gt;
+- 当用户想要可视化sin(x)曲线，可以回复：<htmath><html><div id="plot"></div>
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
     try {
       const plotDiv = document.getElementById('plot');
       if(plotDiv && window.Plotly) {
         Plotly.newPlot(plotDiv, [{
-          x: Array.from({length: 100}, (_, i) =&gt; i * 0.1),
-          y: Array.from({length: 100}, (_, i) =&gt; Math.sin(i * 0.1)),
+          x: Array.from({length: 100}, (_, i) => i * 0.1),
+          y: Array.from({length: 100}, (_, i) => Math.sin(i * 0.1)),
           type: 'scatter'
         }]);
       } else {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 500);
 });
-&lt;/script&gt;</html></htmath>
+</script></html></htmath>
 
 请根据这些特殊格式回应用户。
 `
